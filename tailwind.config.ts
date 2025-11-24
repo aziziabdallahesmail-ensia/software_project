@@ -22,9 +22,11 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: "hsl(var(--primary))",
+          DEFAULT: "#22c55e", // green-500
           foreground: "hsl(var(--primary-foreground))",
         },
+        "background-light": "#ffffff",
+        "background-dark": "#18181b",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -56,6 +58,10 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        DEFAULT: "0.5rem",
+      },
+      fontFamily: {
+        display: ["var(--font-sora)", "sans-serif"],
       },
     },
   },
