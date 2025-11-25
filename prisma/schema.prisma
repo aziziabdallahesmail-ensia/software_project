@@ -6,7 +6,75 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id    String @id @default(cuid())
-  email String @unique
+model Profile {
+  id                  String              @id @db.Uuid
+  email               String?             @unique
+  full_name           String?
+  role                UserRole            @default(unassigned)
+  createdAt           DateTime?           @default(now())
+  updatedAt           DateTime?           @updatedAt
+  specialty           String?
+  experience          Int?
+  credentialUrl       String?
+  description         String?
+  verificationStatus  VerificationStatus? @default(pending)
+  doctorAppointments  Appointment[]       @relation("DoctorAppointments")
+  patientAppointments Appointment[]       @relation("PatientAppointments")
+  availabilities      Availability[]
+
+  @@map("profiles")
+}
+
+model Availability {
+  id        String     @id @default(uuid()) @db.Uuid
+  doctorId  String     @db.Uuid
+  startTime DateTime
+  endTime   DateTime
+  status    SlotStatus @default(available)
+  doctor    Profile    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId, startTime])
+}
+
+model Appointment {
+  id                 String            @id @default(uuid())
+  patientId          String            @db.Uuid
+  doctorId           String            @db.Uuid
+  startTime          DateTime
+  endTime            DateTime
+  status             AppointmentStatus @default(scheduled)
+  notes              String?
+  patientDescription String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  doctor             Profile           @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  patient            Profile           @relation("PatientAppointments", fields: [patientId], references: [id])
+
+  @@index([status, startTime])
+  @@index([doctorId, startTime])
+}
+
+enum UserRole {
+  unassigned
+  patient
+  doctor
+  admin
+}
+
+enum VerificationStatus {
+  pending
+  verified
+  rejected
+}
+
+enum SlotStatus {
+  available
+  booked
+  blocked
+}
+
+enum AppointmentStatus {
+  scheduled
+  completed
+  cancelled
 }
