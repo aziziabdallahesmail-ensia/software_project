@@ -1,17 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+<<<<<<< HEAD
 /**
  * Especially important if using Fluid compute: Don't put this client in a
  * global variable. Always create a new client within each function when using
  * it.
  */
+=======
+>>>>>>> 098b728 (Initial commit)
 export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+<<<<<<< HEAD
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+=======
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,  // ← CHANGER ICI
+>>>>>>> 098b728 (Initial commit)
     {
       cookies: {
         getAll() {
@@ -31,4 +38,8 @@ export async function createClient() {
       },
     },
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 098b728 (Initial commit)

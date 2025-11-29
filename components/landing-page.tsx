@@ -19,8 +19,16 @@ import {
   Stethoscope,
   UsersRound,
   Video,
+<<<<<<< HEAD
 } from "lucide-react";
 import React from "react";
+=======
+  User,
+  Building2,
+} from "lucide-react";
+import React from "react";
+import Link from "next/link";
+>>>>>>> 098b728 (Initial commit)
 
 type Metric = {
   label: string;
@@ -123,6 +131,40 @@ const guarantees = [
   },
 ];
 
+<<<<<<< HEAD
+=======
+// Nouvelle section pour les profils d'utilisateurs
+const userProfiles = [
+  {
+    id: "patient",
+    title: "Patient",
+    description: "Consultez des médecins et gérez votre santé",
+    icon: User,
+    features: ["Consultations vidéo", "Dossier médical", "Rappels intelligents"],
+    link: "/role-selection",
+    color: "from-blue-500 to-cyan-500"
+  },
+  {
+    id: "doctor",
+    title: "Professionnel de santé",
+    description: "Gérez votre cabinet et vos consultations",
+    icon: Stethoscope,
+    features: ["Tableau de bord", "Gestion des patients", "Téléconsultation"],
+    link: "/dashboard/doctors",
+    color: "from-green-500 to-emerald-500"
+  },
+  {
+    id: "admin",
+    title: "Administrateur",
+    description: "Supervisez la plateforme",
+    icon: Building2,
+    features: ["Analytics", "Gestion des accès", "Support"],
+    link: "/role-selection",
+    color: "from-purple-500 to-violet-500"
+  }
+];
+
+>>>>>>> 098b728 (Initial commit)
 function Hero() {
   return (
     <section className="grid gap-10 lg:grid-cols-[0.9fr,1fr] lg:items-center">
@@ -142,16 +184,32 @@ function Hero() {
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+<<<<<<< HEAD
           <Button size="lg" className="h-12 px-8 text-base">
             Commencer gratuitement
             <ArrowRight className="size-4" />
+=======
+          <Button size="lg" className="h-12 px-8 text-base" asChild>
+            <Link href="/role-selection">
+              Commencer gratuitement
+              <ArrowRight className="size-4" />
+            </Link>
+>>>>>>> 098b728 (Initial commit)
           </Button>
           <Button
             size="lg"
             variant="outline"
             className="h-12 px-8 text-base"
+<<<<<<< HEAD
           >
             Trouver un spécialiste
+=======
+            asChild
+          >
+            <Link href="/dashboard/doctors">
+              Voir le dashboard médecin
+            </Link>
+>>>>>>> 098b728 (Initial commit)
           </Button>
         </div>
         <dl className="grid gap-4 sm:grid-cols-3">
@@ -190,7 +248,11 @@ function Hero() {
               </div>
             </div>
             <div className="rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
+<<<<<<< HEAD
               « Pensez à joindre vos analyses avant la fin de l'appel. Les ordonnances seront
+=======
+              « Pensez à joindre vos analyses avant la fin de l&apos;appel. Les ordonnances seront
+>>>>>>> 098b728 (Initial commit)
               envoyées automatiquement. »
             </div>
           </div>
@@ -209,7 +271,11 @@ function Hero() {
                 <p className="text-xs uppercase text-primary">Qualité service</p>
                 <p className="text-lg font-semibold text-primary">99.9% uptime</p>
                 <p className="text-sm text-muted-foreground">
+<<<<<<< HEAD
                   Supervision temps réel de l'infrastructure.
+=======
+                  Supervision temps réel de l&apos;infrastructure.
+>>>>>>> 098b728 (Initial commit)
                 </p>
               </CardContent>
             </Card>
@@ -266,6 +332,63 @@ function HowItWorks() {
   );
 }
 
+<<<<<<< HEAD
+=======
+function UserProfiles() {
+  return (
+    <section className="space-y-12">
+      <div className="text-center space-y-4">
+        <Badge variant="secondary" className="mx-auto w-fit">
+          Profils utilisateurs
+        </Badge>
+        <div className="space-y-3">
+          <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
+            Pour qui est fait MedConnect&nbsp;?
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Découvrez l&apos;expérience adaptée à votre profil
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-8 lg:grid-cols-3">
+        {userProfiles.map((profile) => (
+          <Card key={profile.id} className="border-border/70 bg-background/80 backdrop-blur hover:shadow-lg transition-all duration-300">
+            <CardHeader className="text-center pb-4">
+              <div className={cn(
+                "mx-auto mb-4 rounded-2xl p-4 bg-gradient-to-r text-white",
+                profile.color
+              )}>
+                <profile.icon className="h-8 w-8" />
+              </div>
+              <CardTitle className="text-xl">{profile.title}</CardTitle>
+              <CardDescription className="text-base">
+                {profile.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                {profile.features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Button className="w-full mt-4" asChild>
+                <Link href={profile.link}>
+                  Accéder {profile.id === "doctor" ? "au dashboard" : "au profil"}
+                  <ArrowRight className="size-4 ml-2" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+>>>>>>> 098b728 (Initial commit)
 function Guarantees() {
   return (
     <section className="space-y-10">
@@ -311,7 +434,11 @@ function Testimonials() {
         {testimonials.map((testimonial) => (
           <Card key={testimonial.name} className="border-border/70 bg-background/70">
             <CardContent className="space-y-6 p-6">
+<<<<<<< HEAD
               <p className="text-lg font-medium text-foreground">“{testimonial.quote}”</p>
+=======
+              <p className="text-lg font-medium text-foreground">&ldquo; {testimonial.quote} &rdquo;</p>
+>>>>>>> 098b728 (Initial commit)
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 overflow-hidden rounded-full border border-border/60">
                   <img
@@ -342,7 +469,11 @@ function CTA() {
             Prêt à commencer ?
           </Badge>
           <CardTitle className="text-3xl font-semibold">
+<<<<<<< HEAD
             Prenez le contrôle de votre santé dès aujourd'hui
+=======
+            Prenez le contrôle de votre santé dès aujourd&apos;hui
+>>>>>>> 098b728 (Initial commit)
           </CardTitle>
           <CardDescription className="text-base">
             Rejoignez les patients et praticiens qui simplifient leurs démarches médicales.
@@ -350,11 +481,23 @@ function CTA() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+<<<<<<< HEAD
           <Button size="lg" className="h-12 px-8 text-base">
             Créer mon compte
           </Button>
           <Button size="lg" variant="outline" className="h-12 px-8 text-base">
             Demander une démo
+=======
+          <Button size="lg" className="h-12 px-8 text-base" asChild>
+            <Link href="/role-selection">
+              Choisir mon profil
+            </Link>
+          </Button>
+          <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+            <Link href="/dashboard/doctors">
+              Voir le dashboard démo
+            </Link>
+>>>>>>> 098b728 (Initial commit)
           </Button>
         </CardContent>
       </Card>
@@ -367,10 +510,18 @@ export default function LandingPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 py-12">
       <Hero />
       <HowItWorks />
+<<<<<<< HEAD
+=======
+      <UserProfiles />
+>>>>>>> 098b728 (Initial commit)
       <Guarantees />
       <Testimonials />
       <CTA />
     </div>
   );
+<<<<<<< HEAD
 }
 
+=======
+}
+>>>>>>> 098b728 (Initial commit)
