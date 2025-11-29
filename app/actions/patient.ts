@@ -13,7 +13,8 @@ export async function searchDoctors(params: {
 
     const whereClause: any = {
         role: "doctor",
-        verificationStatus: "verified", // only verified doctors
+        verificationStatus: "verified",
+        isActive: true, // only active doctors
     };
 
     if (specialty) {
@@ -38,8 +39,13 @@ export async function searchDoctors(params: {
             specialty: true,
             description: true,
             experience: true,
-            credentialUrl: true, // good for details
+            credentialUrl: true,
+            isFeatured: true,
         },
+        orderBy: [
+            { isFeatured: "desc" },
+            { createdAt: "desc" },
+        ],
     });
 
     return doctors;
