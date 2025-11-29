@@ -19,7 +19,8 @@ model Profile {
   credentialUrl       String?
   description         String?
   verificationStatus  VerificationStatus? @default(pending)
-  password            String?
+  isActive            Boolean             @default(true)
+  isFeatured          Boolean             @default(false)
   doctorAppointments  Appointment[]       @relation("DoctorAppointments")
   patientAppointments Appointment[]       @relation("PatientAppointments")
   availabilities      Availability[]

@@ -82,6 +82,15 @@ export async function setAvailability(slots: { startTime: Date; endTime: Date }[
     throw new Error("Unauthorized");
   }
 
+  const profile = await prisma.profile.findUnique({
+    where: { id: user.id },
+    select: { isActive: true },
+  });
+
+  if (!profile?.isActive) {
+    return { success: false, error: "Account is suspended" };
+  }
+
   try {
     // multiple availability slots
     await prisma.availability.createMany({
