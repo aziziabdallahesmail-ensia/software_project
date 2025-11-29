@@ -9,6 +9,9 @@ import {
 } from "@/app/actions/doctor";
 
 export async function GET() {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   try {
     const results: any = {};
 
@@ -48,7 +51,7 @@ export async function GET() {
     console.log("Testing getDoctorAvailability...");
     const availability = await getDoctorAvailability();
     results.getAvailability = availability;
-    
+
     // 6. Get appointments
     console.log("Testing getDoctorAppointments...");
     const appointments = await getDoctorAppointments();
