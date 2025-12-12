@@ -26,12 +26,9 @@
     "paths": {
       "@/*": [
         "./*"
-<<<<<<< HEAD
       ],
       "@prisma/client": [
         "./node_modules/.prisma/client"
-=======
->>>>>>> 098b728 (Initial commit)
       ]
     }
   },
