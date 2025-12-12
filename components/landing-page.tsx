@@ -19,16 +19,11 @@ import {
   Stethoscope,
   UsersRound,
   Video,
-<<<<<<< HEAD
-} from "lucide-react";
-import React from "react";
-=======
   User,
   Building2,
 } from "lucide-react";
 import React from "react";
 import Link from "next/link";
->>>>>>> 098b728 (Initial commit)
 
 type Metric = {
   label: string;
@@ -131,8 +126,6 @@ const guarantees = [
   },
 ];
 
-<<<<<<< HEAD
-=======
 // Nouvelle section pour les profils d'utilisateurs
 const userProfiles = [
   {
@@ -164,7 +157,6 @@ const userProfiles = [
   }
 ];
 
->>>>>>> 098b728 (Initial commit)
 function Hero() {
   return (
     <section className="grid gap-10 lg:grid-cols-[0.9fr,1fr] lg:items-center">
@@ -184,32 +176,21 @@ function Hero() {
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
-<<<<<<< HEAD
-          <Button size="lg" className="h-12 px-8 text-base">
-            Commencer gratuitement
-            <ArrowRight className="size-4" />
-=======
           <Button size="lg" className="h-12 px-8 text-base" asChild>
             <Link href="/role-selection">
               Commencer gratuitement
               <ArrowRight className="size-4" />
             </Link>
->>>>>>> 098b728 (Initial commit)
           </Button>
           <Button
             size="lg"
             variant="outline"
             className="h-12 px-8 text-base"
-<<<<<<< HEAD
-          >
-            Trouver un spécialiste
-=======
             asChild
           >
             <Link href="/dashboard/doctors">
               Voir le dashboard médecin
             </Link>
->>>>>>> 098b728 (Initial commit)
           </Button>
         </div>
         <dl className="grid gap-4 sm:grid-cols-3">
@@ -248,11 +229,7 @@ function Hero() {
               </div>
             </div>
             <div className="rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
-<<<<<<< HEAD
-              « Pensez à joindre vos analyses avant la fin de l'appel. Les ordonnances seront
-=======
               « Pensez à joindre vos analyses avant la fin de l&apos;appel. Les ordonnances seront
->>>>>>> 098b728 (Initial commit)
               envoyées automatiquement. »
             </div>
           </div>
@@ -271,11 +248,7 @@ function Hero() {
                 <p className="text-xs uppercase text-primary">Qualité service</p>
                 <p className="text-lg font-semibold text-primary">99.9% uptime</p>
                 <p className="text-sm text-muted-foreground">
-<<<<<<< HEAD
-                  Supervision temps réel de l'infrastructure.
-=======
                   Supervision temps réel de l&apos;infrastructure.
->>>>>>> 098b728 (Initial commit)
                 </p>
               </CardContent>
             </Card>
@@ -332,8 +305,6 @@ function HowItWorks() {
   );
 }
 
-<<<<<<< HEAD
-=======
 function UserProfiles() {
   return (
     <section className="space-y-12">
@@ -388,7 +359,6 @@ function UserProfiles() {
   );
 }
 
->>>>>>> 098b728 (Initial commit)
 function Guarantees() {
   return (
     <section className="space-y-10">
@@ -434,11 +404,7 @@ function Testimonials() {
         {testimonials.map((testimonial) => (
           <Card key={testimonial.name} className="border-border/70 bg-background/70">
             <CardContent className="space-y-6 p-6">
-<<<<<<< HEAD
-              <p className="text-lg font-medium text-foreground">“{testimonial.quote}”</p>
-=======
               <p className="text-lg font-medium text-foreground">&ldquo; {testimonial.quote} &rdquo;</p>
->>>>>>> 098b728 (Initial commit)
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 overflow-hidden rounded-full border border-border/60">
                   <img
@@ -469,11 +435,7 @@ function CTA() {
             Prêt à commencer ?
           </Badge>
           <CardTitle className="text-3xl font-semibold">
-<<<<<<< HEAD
-            Prenez le contrôle de votre santé dès aujourd'hui
-=======
             Prenez le contrôle de votre santé dès aujourd&apos;hui
->>>>>>> 098b728 (Initial commit)
           </CardTitle>
           <CardDescription className="text-base">
             Rejoignez les patients et praticiens qui simplifient leurs démarches médicales.
@@ -481,13 +443,6 @@ function CTA() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-<<<<<<< HEAD
-          <Button size="lg" className="h-12 px-8 text-base">
-            Créer mon compte
-          </Button>
-          <Button size="lg" variant="outline" className="h-12 px-8 text-base">
-            Demander une démo
-=======
           <Button size="lg" className="h-12 px-8 text-base" asChild>
             <Link href="/role-selection">
               Choisir mon profil
@@ -497,7 +452,6 @@ function CTA() {
             <Link href="/dashboard/doctors">
               Voir le dashboard démo
             </Link>
->>>>>>> 098b728 (Initial commit)
           </Button>
         </CardContent>
       </Card>
@@ -510,18 +464,10 @@ export default function LandingPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 py-12">
       <Hero />
       <HowItWorks />
-<<<<<<< HEAD
-=======
       <UserProfiles />
->>>>>>> 098b728 (Initial commit)
       <Guarantees />
       <Testimonials />
       <CTA />
     </div>
   );
-<<<<<<< HEAD
 }
-
-=======
-}
->>>>>>> 098b728 (Initial commit)

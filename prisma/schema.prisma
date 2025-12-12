@@ -4,10 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-<<<<<<< HEAD
-  url      = env("DATABASE_URL")
-=======
->>>>>>> 098b728 (Initial commit)
 }
 
 model Profile {
@@ -22,11 +18,6 @@ model Profile {
   credentialUrl       String?
   description         String?
   verificationStatus  VerificationStatus? @default(pending)
-<<<<<<< HEAD
-  isActive            Boolean             @default(true)
-  isFeatured          Boolean             @default(false)
-=======
->>>>>>> 098b728 (Initial commit)
   doctorAppointments  Appointment[]       @relation("DoctorAppointments")
   patientAppointments Appointment[]       @relation("PatientAppointments")
   availabilities      Availability[]
