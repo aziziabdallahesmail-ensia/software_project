@@ -31,12 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${sora.variable} font-display bg-background-light dark:bg-background-dark text-zinc-700 dark:text-zinc-300 antialiased`}>
+      <body className={`${geistSans.variable} ${sora.variable} font-display bg-background-light dark:bg-background-dark text-zinc-700 dark:text-zinc-300 antialiased transition-colors duration-300`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           {children}
         </ThemeProvider>
