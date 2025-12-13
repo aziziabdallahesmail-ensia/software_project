@@ -1,45 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/admin/empty-state";
-import { DoctorCard } from "@/components/admin/doctor-card";
-import toast from "react-hot-toast";
-import { 
-  activateDoctor, 
-  suspendDoctor, 
-  promoteDoctor, 
-  unpromoteDoctor 
-} from "@/app/actions/admin";
-
-type Doctor = {
-  id: string;
-  full_name: string | null;
-  specialty: string | null;
-  description: string | null;
-  experience: number | null;
-  isActive: boolean | null;
-  isFeatured: boolean | null;
-};
-
-interface DoctorsListProps {
-  initialDoctors: Doctor[];
-}
+import { PendingDoctorCard } from "@/components/admin/pending-doctor-card";
+import { MOCK_PENDING_DOCTORS } from "@/lib/mock-data";
 
 const ITEMS_PER_PAGE = 6;
 
-export function DoctorsList({ initialDoctors }: DoctorsListProps) {
+export function PendingDoctorsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isPending, startTransition] = useTransition();
-
+  
   // Filter doctors based on search query
-  const filteredDoctors = initialDoctors.filter((doctor) =>
+  const filteredDoctors = MOCK_PENDING_DOCTORS.filter((doctor) =>
     searchQuery === "" ||
-    doctor.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doctor.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
+    doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Pagination
@@ -54,59 +33,20 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
     setCurrentPage(1);
   };
 
-  const handleActivate = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await activateDoctor(doctorId);
-      if (result.success) {
-        toast.success("Médecin activé avec succès");
-      } else {
-        toast.error(result.error || "Échec de l'activation");
-      }
-    });
-  };
-
-  const handleSuspend = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await suspendDoctor(doctorId);
-      if (result.success) {
-        toast.success("Médecin suspendu avec succès");
-      } else {
-        toast.error(result.error || "Échec de la suspension");
-      }
-    });
-  };
-
-  const handlePromote = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await promoteDoctor(doctorId);
-      if (result.success) {
-        toast.success("Médecin promu avec succès");
-      } else {
-        toast.error(result.error || "Échec de la promotion");
-      }
-    });
-  };
-
-  const handleUnpromote = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await unpromoteDoctor(doctorId);
-      if (result.success) {
-        toast.success("Promotion retirée avec succès");
-      } else {
-        toast.error(result.error || "Échec du retrait de promotion");
-      }
-    });
-  };
-
   return (
     <section className="flex-1">
       <div className="bg-card rounded-xl border shadow-sm min-h-[500px] flex flex-col">
         {/* Header */}
         <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold">Gérer les Médecins</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Consultez et gérez tous les médecins vérifiés.
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-xl font-bold">Vérifications en attente</h2>
+              <span className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold rounded-full">
+                {MOCK_PENDING_DOCTORS.length}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Examinez et approuvez les demandes de vérification des médecins.
             </p>
           </div>
           <div className="relative w-full sm:w-72">
@@ -135,39 +75,22 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <line x1="17" x2="22" y1="8" y2="8" />
-                  <line x1="19.5" x2="19.5" y1="5.5" y2="10.5" />
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4" />
+                  <path d="M12 8h.01" />
                 </svg>
               }
-              title={searchQuery ? "Aucun résultat trouvé" : "Aucun médecin vérifié disponible"}
+              title={searchQuery ? "Aucun résultat trouvé" : "Aucune demande en attente"}
               description={
                 searchQuery
                   ? "Essayez de modifier votre recherche ou vérifiez l'orthographe."
-                  : "Il n'y a actuellement aucun médecin dans la liste vérifiée. Vérifiez les demandes en attente."
+                  : "Il n'y a actuellement aucune demande de vérification en attente."
               }
             />
           ) : (
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
               {paginatedDoctors.map((doctor) => (
-                <DoctorCard 
-                  key={doctor.id} 
-                  doctor={{
-                    id: doctor.id,
-                    full_name: doctor.full_name || "",
-                    specialty: doctor.specialty || "",
-                    description: doctor.description || "",
-                    experience: doctor.experience || undefined,
-                    isActive: doctor.isActive ?? true,
-                    isPromoted: doctor.isFeatured ?? false,
-                  }}
-                  onActivate={handleActivate}
-                  onSuspend={handleSuspend}
-                  onPromote={handlePromote}
-                  onUnpromote={handleUnpromote}
-                  isPending={isPending}
-                />
+                <PendingDoctorCard key={doctor.id} doctor={doctor} />
               ))}
             </div>
           )}

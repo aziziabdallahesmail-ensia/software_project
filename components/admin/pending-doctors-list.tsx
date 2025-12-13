@@ -5,36 +5,30 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/admin/empty-state";
-import { DoctorCard } from "@/components/admin/doctor-card";
+import { PendingDoctorCard } from "@/components/admin/pending-doctor-card";
 import toast from "react-hot-toast";
-import { 
-  activateDoctor, 
-  suspendDoctor, 
-  promoteDoctor, 
-  unpromoteDoctor 
-} from "@/app/actions/admin";
+import { approveDoctorVerification, rejectDoctorVerification } from "@/app/actions/admin";
 
-type Doctor = {
+type PendingDoctor = {
   id: string;
   full_name: string | null;
   specialty: string | null;
   description: string | null;
   experience: number | null;
-  isActive: boolean | null;
-  isFeatured: boolean | null;
+  credentialUrl: string | null;
 };
 
-interface DoctorsListProps {
-  initialDoctors: Doctor[];
+interface PendingDoctorsListProps {
+  initialDoctors: PendingDoctor[];
 }
 
 const ITEMS_PER_PAGE = 6;
 
-export function DoctorsList({ initialDoctors }: DoctorsListProps) {
+export function PendingDoctorsList({ initialDoctors }: PendingDoctorsListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isPending, startTransition] = useTransition();
-
+  
   // Filter doctors based on search query
   const filteredDoctors = initialDoctors.filter((doctor) =>
     searchQuery === "" ||
@@ -54,46 +48,24 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
     setCurrentPage(1);
   };
 
-  const handleActivate = async (doctorId: string) => {
+  const handleApprove = async (doctorId: string) => {
     startTransition(async () => {
-      const result = await activateDoctor(doctorId);
+      const result = await approveDoctorVerification(doctorId);
       if (result.success) {
-        toast.success("Médecin activé avec succès");
+        toast.success("Médecin approuvé avec succès");
       } else {
-        toast.error(result.error || "Échec de l'activation");
+        toast.error(result.error || "Échec de l'approbation");
       }
     });
   };
 
-  const handleSuspend = async (doctorId: string) => {
+  const handleReject = async (doctorId: string) => {
     startTransition(async () => {
-      const result = await suspendDoctor(doctorId);
+      const result = await rejectDoctorVerification(doctorId);
       if (result.success) {
-        toast.success("Médecin suspendu avec succès");
+        toast.success("Médecin rejeté");
       } else {
-        toast.error(result.error || "Échec de la suspension");
-      }
-    });
-  };
-
-  const handlePromote = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await promoteDoctor(doctorId);
-      if (result.success) {
-        toast.success("Médecin promu avec succès");
-      } else {
-        toast.error(result.error || "Échec de la promotion");
-      }
-    });
-  };
-
-  const handleUnpromote = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await unpromoteDoctor(doctorId);
-      if (result.success) {
-        toast.success("Promotion retirée avec succès");
-      } else {
-        toast.error(result.error || "Échec du retrait de promotion");
+        toast.error(result.error || "Échec du rejet");
       }
     });
   };
@@ -104,9 +76,14 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
         {/* Header */}
         <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold">Gérer les Médecins</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Consultez et gérez tous les médecins vérifiés.
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-xl font-bold">Vérifications en attente</h2>
+              <span className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold rounded-full">
+                {initialDoctors.length}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Examinez et approuvez les demandes de vérification des médecins.
             </p>
           </div>
           <div className="relative w-full sm:w-72">
@@ -135,23 +112,22 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <line x1="17" x2="22" y1="8" y2="8" />
-                  <line x1="19.5" x2="19.5" y1="5.5" y2="10.5" />
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4" />
+                  <path d="M12 8h.01" />
                 </svg>
               }
-              title={searchQuery ? "Aucun résultat trouvé" : "Aucun médecin vérifié disponible"}
+              title={searchQuery ? "Aucun résultat trouvé" : "Aucune demande en attente"}
               description={
                 searchQuery
                   ? "Essayez de modifier votre recherche ou vérifiez l'orthographe."
-                  : "Il n'y a actuellement aucun médecin dans la liste vérifiée. Vérifiez les demandes en attente."
+                  : "Il n'y a actuellement aucune demande de vérification en attente."
               }
             />
           ) : (
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
               {paginatedDoctors.map((doctor) => (
-                <DoctorCard 
+                <PendingDoctorCard 
                   key={doctor.id} 
                   doctor={{
                     id: doctor.id,
@@ -159,13 +135,10 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
                     specialty: doctor.specialty || "",
                     description: doctor.description || "",
                     experience: doctor.experience || undefined,
-                    isActive: doctor.isActive ?? true,
-                    isPromoted: doctor.isFeatured ?? false,
+                    credentialUrl: doctor.credentialUrl || undefined,
                   }}
-                  onActivate={handleActivate}
-                  onSuspend={handleSuspend}
-                  onPromote={handlePromote}
-                  onUnpromote={handleUnpromote}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
                   isPending={isPending}
                 />
               ))}

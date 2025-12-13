@@ -1,45 +1,117 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/admin/empty-state";
 import { DoctorCard } from "@/components/admin/doctor-card";
-import toast from "react-hot-toast";
-import { 
-  activateDoctor, 
-  suspendDoctor, 
-  promoteDoctor, 
-  unpromoteDoctor 
-} from "@/app/actions/admin";
 
-type Doctor = {
-  id: string;
-  full_name: string | null;
-  specialty: string | null;
-  description: string | null;
-  experience: number | null;
-  isActive: boolean | null;
-  isFeatured: boolean | null;
-};
-
-interface DoctorsListProps {
-  initialDoctors: Doctor[];
-}
+// Mock data - TODO: Replace with actual data fetching from getActiveDoctors()
+const MOCK_DOCTORS = [
+  {
+    id: "1",
+    full_name: "Sarah Martin",
+    specialty: "Cardiologue",
+    description: "Spécialiste en cardiologie avec plus de 15 ans d'expérience dans le traitement des maladies cardiovasculaires. Passionnée par les nouvelles technologies médicales.",
+    experience: 15,
+    isActive: true,
+    isPromoted: false,
+  },
+  {
+    id: "2",
+    full_name: "Jean Dupont",
+    specialty: "Dermatologue",
+    description: "Expert en dermatologie esthétique et médicale. Traitement des affections cutanées et consultation en médecine anti-âge.",
+    experience: 10,
+    isActive: true,
+    isPromoted: true,
+  },
+  {
+    id: "3",
+    full_name: "Marie Lefebvre",
+    specialty: "Pédiatre",
+    description: "Médecin pédiatre dévoué au bien-être des enfants. Suivi médical complet de la naissance à l'adolescence.",
+    experience: 12,
+    isActive: false,
+    isPromoted: false,
+  },
+  {
+    id: "4",
+    full_name: "Ahmed Benali",
+    specialty: "Neurologue",
+    description: "Spécialiste des troubles neurologiques et des maladies du système nerveux. Approche holistique du patient.",
+    experience: 18,
+    isActive: true,
+    isPromoted: false,
+  },
+  {
+    id: "5",
+    full_name: "Claire Dubois",
+    specialty: "Ophtalmologue",
+    description: "Experte en chirurgie réfractive et traitement des maladies oculaires. Consultation pour tous types de problèmes de vision.",
+    experience: 14,
+    isActive: true,
+    isPromoted: true,
+  },
+  {
+    id: "6",
+    full_name: "Marc Rousseau",
+    specialty: "Psychiatre",
+    description: "Accompagnement psychologique et traitement des troubles mentaux. Approche bienveillante et personnalisée.",
+    experience: 20,
+    isActive: true,
+    isPromoted: false,
+  },
+  {
+    id: "7",
+    full_name: "Fatima El Amrani",
+    specialty: "Gynécologue",
+    description: "Suivi gynécologique complet, grossesse et santé reproductive. Consultations et dépistages préventifs.",
+    experience: 16,
+    isActive: true,
+    isPromoted: false,
+  },
+  {
+    id: "8",
+    full_name: "Thomas Bernard",
+    specialty: "Orthopédiste",
+    description: "Traitement des troubles musculo-squelettiques et traumatismes sportifs. Chirurgie et rééducation.",
+    experience: 11,
+    isActive: false,
+    isPromoted: false,
+  },
+  {
+    id: "9",
+    full_name: "Sophie Lambert",
+    specialty: "Endocrinologue",
+    description: "Spécialiste des troubles hormonaux et métaboliques. Diabète, thyroïde et problèmes de croissance.",
+    experience: 13,
+    isActive: true,
+    isPromoted: false,
+  },
+  {
+    id: "10",
+    full_name: "Pierre Moreau",
+    specialty: "Radiologue",
+    description: "Expert en imagerie médicale et diagnostic radiologique. IRM, scanner et échographie de pointe.",
+    experience: 19,
+    isActive: true,
+    isPromoted: true,
+  },
+];
 
 const ITEMS_PER_PAGE = 6;
 
-export function DoctorsList({ initialDoctors }: DoctorsListProps) {
+export function DoctorsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isPending, startTransition] = useTransition();
-
+  
   // Filter doctors based on search query
-  const filteredDoctors = initialDoctors.filter((doctor) =>
+  const filteredDoctors = MOCK_DOCTORS.filter((doctor) =>
     searchQuery === "" ||
-    doctor.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doctor.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
+    doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Pagination
@@ -52,50 +124,6 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setCurrentPage(1);
-  };
-
-  const handleActivate = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await activateDoctor(doctorId);
-      if (result.success) {
-        toast.success("Médecin activé avec succès");
-      } else {
-        toast.error(result.error || "Échec de l'activation");
-      }
-    });
-  };
-
-  const handleSuspend = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await suspendDoctor(doctorId);
-      if (result.success) {
-        toast.success("Médecin suspendu avec succès");
-      } else {
-        toast.error(result.error || "Échec de la suspension");
-      }
-    });
-  };
-
-  const handlePromote = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await promoteDoctor(doctorId);
-      if (result.success) {
-        toast.success("Médecin promu avec succès");
-      } else {
-        toast.error(result.error || "Échec de la promotion");
-      }
-    });
-  };
-
-  const handleUnpromote = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await unpromoteDoctor(doctorId);
-      if (result.success) {
-        toast.success("Promotion retirée avec succès");
-      } else {
-        toast.error(result.error || "Échec du retrait de promotion");
-      }
-    });
   };
 
   return (
@@ -151,23 +179,7 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
           ) : (
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
               {paginatedDoctors.map((doctor) => (
-                <DoctorCard 
-                  key={doctor.id} 
-                  doctor={{
-                    id: doctor.id,
-                    full_name: doctor.full_name || "",
-                    specialty: doctor.specialty || "",
-                    description: doctor.description || "",
-                    experience: doctor.experience || undefined,
-                    isActive: doctor.isActive ?? true,
-                    isPromoted: doctor.isFeatured ?? false,
-                  }}
-                  onActivate={handleActivate}
-                  onSuspend={handleSuspend}
-                  onPromote={handlePromote}
-                  onUnpromote={handleUnpromote}
-                  isPending={isPending}
-                />
+                <DoctorCard key={doctor.id} doctor={doctor} />
               ))}
             </div>
           )}
@@ -180,7 +192,7 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
           </span>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground mr-2">
-              Page {currentPage} / {totalPages || 1}
+              Page {currentPage} / {totalPages}
             </span>
             <Button
               variant="ghost"
@@ -206,7 +218,7 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              disabled={currentPage === totalPages || totalPages === 0}
+              disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
             >
               <svg
