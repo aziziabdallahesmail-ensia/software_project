@@ -1,5 +1,6 @@
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { PendingDoctorsList } from "@/components/admin/pending-doctors-list";
 
 export default function PendingVerificationPage() {
   return (
@@ -8,14 +9,7 @@ export default function PendingVerificationPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-8">
           <AdminSidebar />
-          <section className="flex-1">
-            <div className="bg-card rounded-xl border shadow-sm p-6">
-              <h2 className="text-xl font-bold mb-2">Vérification en attente</h2>
-              <p className="text-muted-foreground">
-                Page de vérification en attente - à implémenter
-              </p>
-            </div>
-          </section>
+          <PendingDoctorsList />
         </div>
       </main>
     </div>

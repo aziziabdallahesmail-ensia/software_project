@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { MOCK_PENDING_DOCTORS } from "@/lib/mock-data";
 
 interface NavItem {
   label: string;
@@ -17,7 +18,7 @@ const navItems: NavItem[] = [
     label: "Vérification en attente",
     href: "/admin/pending-verification",
     icon: <span className="material-icons-round text-xl">pending_actions</span>,
-    badge: 3,
+    badge: MOCK_PENDING_DOCTORS.length,
   },
   {
     label: "Médecins",
