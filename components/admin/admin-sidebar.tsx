@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_PENDING_DOCTORS } from "@/lib/mock-data";
 
 interface NavItem {
   label: string;
@@ -13,27 +12,31 @@ interface NavItem {
   badge?: number;
 }
 
-const navItems: NavItem[] = [
-  {
-    label: "Vérification en attente",
-    href: "/admin/pending-verification",
-    icon: <span className="material-icons-round text-xl">pending_actions</span>,
-    badge: MOCK_PENDING_DOCTORS.length,
-  },
-  {
-    label: "Médecins",
-    href: "/admin",
-    icon: <span className="material-icons-round text-xl">people_alt</span>,
-  },
-  {
-    label: "Configuration",
-    href: "/admin/configuration",
-    icon: <span className="material-icons-round text-xl">settings</span>,
-  },
-];
+interface AdminSidebarProps {
+  pendingCount?: number;
+}
 
-export function AdminSidebar() {
+export function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
   const pathname = usePathname();
+
+  const navItems: NavItem[] = [
+    {
+      label: "Vérification en attente",
+      href: "/admin/pending-verification",
+      icon: <span className="material-icons-round text-xl">pending_actions</span>,
+      badge: pendingCount > 0 ? pendingCount : undefined,
+    },
+    {
+      label: "Médecins",
+      href: "/admin",
+      icon: <span className="material-icons-round text-xl">people_alt</span>,
+    },
+    {
+      label: "Configuration",
+      href: "/admin/configuration",
+      icon: <span className="material-icons-round text-xl">settings</span>,
+    },
+  ];
 
   return (
     <aside className="w-full lg:w-72 flex-shrink-0">
