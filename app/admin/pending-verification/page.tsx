@@ -11,7 +11,7 @@ export default async function PendingVerificationPage() {
       <AdminHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-8">
-          <AdminSidebar />
+          <AdminSidebar pendingCount={doctors.length} />
           <PendingDoctorsList initialDoctors={doctors} />
         </div>
       </main>

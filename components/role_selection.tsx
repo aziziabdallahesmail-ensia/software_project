@@ -79,8 +79,8 @@ export function RoleSelection() {
       window.location.href = "/dashboard/doctors";
     } else if (selectedRole === "patient") {
       window.location.href = "/dashboard/patient";
-    } else {
-      window.location.href = "/dashboard/admin";
+    } else if (selectedRole === "admin") {
+      window.location.href = "/admin";
     }
   };
 
