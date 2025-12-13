@@ -20,9 +20,21 @@ interface DoctorCardProps {
     isActive?: boolean;
     isPromoted?: boolean;
   };
+  onActivate?: (id: string) => void;
+  onSuspend?: (id: string) => void;
+  onPromote?: (id: string) => void;
+  onUnpromote?: (id: string) => void;
+  isPending?: boolean;
 }
 
-export function DoctorCard({ doctor }: DoctorCardProps) {
+export function DoctorCard({ 
+  doctor, 
+  onActivate, 
+  onSuspend, 
+  onPromote, 
+  onUnpromote,
+  isPending 
+}: DoctorCardProps) {
   return (
     <div className="bg-card rounded-xl border p-6 hover:shadow-lg transition-all group">
       <div className="flex items-start gap-4">
@@ -67,7 +79,7 @@ export function DoctorCard({ doctor }: DoctorCardProps) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" disabled={isPending}>
                   <span className="material-icons-round text-base">
                     more_vert
                   </span>
@@ -75,14 +87,22 @@ export function DoctorCard({ doctor }: DoctorCardProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 {doctor.isActive ? (
-                  <DropdownMenuItem className="text-orange-600 focus:text-orange-600">
+                  <DropdownMenuItem 
+                    className="text-orange-600 focus:text-orange-600"
+                    onClick={() => onSuspend?.(doctor.id)}
+                    disabled={isPending}
+                  >
                     <span className="material-icons-round text-base mr-2">
                       block
                     </span>
                     Suspendre
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem className="text-green-600 focus:text-green-600">
+                  <DropdownMenuItem 
+                    className="text-green-600 focus:text-green-600"
+                    onClick={() => onActivate?.(doctor.id)}
+                    disabled={isPending}
+                  >
                     <span className="material-icons-round text-base mr-2">
                       check_circle
                     </span>
@@ -91,14 +111,20 @@ export function DoctorCard({ doctor }: DoctorCardProps) {
                 )}
                 <DropdownMenuSeparator />
                 {doctor.isPromoted ? (
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onUnpromote?.(doctor.id)}
+                    disabled={isPending}
+                  >
                     <span className="material-icons-round text-base mr-2">
                       arrow_downward
                     </span>
                     Retirer promotion
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onPromote?.(doctor.id)}
+                    disabled={isPending}
+                  >
                     <span className="material-icons-round text-base mr-2">
                       star
                     </span>

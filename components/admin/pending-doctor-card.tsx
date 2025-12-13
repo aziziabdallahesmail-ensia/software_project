@@ -19,9 +19,12 @@ interface PendingDoctorCardProps {
     experience?: number;
     credentialUrl?: string;
   };
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+  isPending?: boolean;
 }
 
-export function PendingDoctorCard({ doctor }: PendingDoctorCardProps) {
+export function PendingDoctorCard({ doctor, onApprove, onReject, isPending }: PendingDoctorCardProps) {
   return (
     <div className="bg-card rounded-xl border-2 border-orange-200 dark:border-orange-900/40 p-6 hover:shadow-lg transition-all group">
       <div className="flex items-start gap-4">
@@ -78,21 +81,29 @@ export function PendingDoctorCard({ doctor }: PendingDoctorCardProps) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" disabled={isPending}>
                   <span className="material-icons-round text-base">
                     more_vert
                   </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem className="text-green-600 focus:text-green-600 focus:bg-green-50 dark:focus:bg-green-950">
+                <DropdownMenuItem 
+                  className="text-green-600 focus:text-green-600 focus:bg-green-50 dark:focus:bg-green-950"
+                  onClick={() => onApprove?.(doctor.id)}
+                  disabled={isPending}
+                >
                   <span className="material-icons-round text-base mr-2">
                     check_circle
                   </span>
                   Approuver
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950">
+                <DropdownMenuItem 
+                  className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
+                  onClick={() => onReject?.(doctor.id)}
+                  disabled={isPending}
+                >
                   <span className="material-icons-round text-base mr-2">
                     cancel
                   </span>

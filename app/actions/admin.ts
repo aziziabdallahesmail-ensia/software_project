@@ -103,7 +103,7 @@ export async function rejectDoctorVerification(doctorId: string) {
             },
         });
 
-        revalidatePath("/admin/dashboard");
+        revalidatePath("/admin/pending-verification");
         return { success: true };
     } catch (error) {
         console.error("Error rejecting doctor:", error);
@@ -139,6 +139,8 @@ export async function getActiveDoctors() {
             specialty: true,
             experience: true,
             description: true,
+            isActive: true,
+            isFeatured: true,
             createdAt: true,
             // include stats
             _count: {
@@ -218,7 +220,7 @@ export async function suspendDoctor(doctorId: string) {
             },
         });
 
-        revalidatePath("/admin/dashboard");
+        revalidatePath("/admin");
         return { success: true };
     } catch (error) {
         console.error("Error suspending doctor:", error);
@@ -251,7 +253,7 @@ export async function activateDoctor(doctorId: string) {
             },
         });
 
-        revalidatePath("/admin/dashboard");
+        revalidatePath("/admin");
         return { success: true };
     } catch (error) {
         console.error("Error activating doctor:", error);
@@ -284,7 +286,7 @@ export async function promoteDoctor(doctorId: string) {
             },
         });
 
-        revalidatePath("/admin/dashboard");
+        revalidatePath("/admin");
         return { success: true };
     } catch (error) {
         console.error("Error promoting doctor:", error);
@@ -317,7 +319,7 @@ export async function unpromoteDoctor(doctorId: string) {
             },
         });
 
-        revalidatePath("/admin/dashboard");
+        revalidatePath("/admin");
         return { success: true };
     } catch (error) {
         console.error("Error unpromoting doctor:", error);

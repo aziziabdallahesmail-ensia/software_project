@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Sora } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/toaster";
 import "./globals.css";
 
 const defaultUrl = "http://localhost:3000";
@@ -38,6 +39,7 @@ export default function RootLayout({
           enableSystem
         >
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

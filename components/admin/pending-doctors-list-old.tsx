@@ -1,39 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/admin/empty-state";
 import { PendingDoctorCard } from "@/components/admin/pending-doctor-card";
-import toast from "react-hot-toast";
-import { approveDoctorVerification, rejectDoctorVerification } from "@/app/actions/admin";
-
-type PendingDoctor = {
-  id: string;
-  full_name: string | null;
-  specialty: string | null;
-  description: string | null;
-  experience: number | null;
-  credentialUrl: string | null;
-};
-
-interface PendingDoctorsListProps {
-  initialDoctors: PendingDoctor[];
-}
+import { MOCK_PENDING_DOCTORS } from "@/lib/mock-data";
 
 const ITEMS_PER_PAGE = 6;
 
-export function PendingDoctorsList({ initialDoctors }: PendingDoctorsListProps) {
+export function PendingDoctorsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isPending, startTransition] = useTransition();
   
   // Filter doctors based on search query
-  const filteredDoctors = initialDoctors.filter((doctor) =>
+  const filteredDoctors = MOCK_PENDING_DOCTORS.filter((doctor) =>
     searchQuery === "" ||
-    doctor.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doctor.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
+    doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Pagination
@@ -48,28 +33,6 @@ export function PendingDoctorsList({ initialDoctors }: PendingDoctorsListProps) 
     setCurrentPage(1);
   };
 
-  const handleApprove = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await approveDoctorVerification(doctorId);
-      if (result.success) {
-        toast.success("Médecin approuvé avec succès");
-      } else {
-        toast.error(result.error || "Échec de l'approbation");
-      }
-    });
-  };
-
-  const handleReject = async (doctorId: string) => {
-    startTransition(async () => {
-      const result = await rejectDoctorVerification(doctorId);
-      if (result.success) {
-        toast.success("Médecin rejeté");
-      } else {
-        toast.error(result.error || "Échec du rejet");
-      }
-    });
-  };
-
   return (
     <section className="flex-1">
       <div className="bg-card rounded-xl border shadow-sm min-h-[500px] flex flex-col">
@@ -79,7 +42,7 @@ export function PendingDoctorsList({ initialDoctors }: PendingDoctorsListProps) 
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-xl font-bold">Vérifications en attente</h2>
               <span className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold rounded-full">
-                {initialDoctors.length}
+                {MOCK_PENDING_DOCTORS.length}
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -127,20 +90,7 @@ export function PendingDoctorsList({ initialDoctors }: PendingDoctorsListProps) 
           ) : (
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
               {paginatedDoctors.map((doctor) => (
-                <PendingDoctorCard 
-                  key={doctor.id} 
-                  doctor={{
-                    id: doctor.id,
-                    full_name: doctor.full_name || "",
-                    specialty: doctor.specialty || "",
-                    description: doctor.description || "",
-                    experience: doctor.experience || undefined,
-                    credentialUrl: doctor.credentialUrl || undefined,
-                  }}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  isPending={isPending}
-                />
+                <PendingDoctorCard key={doctor.id} doctor={doctor} />
               ))}
             </div>
           )}
