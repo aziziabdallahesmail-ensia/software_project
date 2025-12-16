@@ -9,7 +9,7 @@ import {
     activateDoctor,
     promoteDoctor,
     unpromoteDoctor,
-} from "@/app/actions/admin";
+} from "@/actions/admin";
 
 export async function GET() {
     if (process.env.NODE_ENV !== "development") {

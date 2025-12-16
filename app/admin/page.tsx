@@ -1,7 +1,7 @@
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { DoctorsList } from "@/components/admin/doctors-list";
-import { getActiveDoctors, getPendingDoctors } from "@/app/actions/admin";
+import { getActiveDoctors, getPendingDoctors } from "@/actions/admin";
 
 export default async function AdminDashboardPage() {
   const [doctors, pendingDoctors] = await Promise.all([

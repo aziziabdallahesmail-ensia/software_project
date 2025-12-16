@@ -5,7 +5,7 @@ import {
     getDoctorAvailableSlots,
     bookAppointment,
     getPatientAppointments,
-} from "@/app/actions/patient";
+} from "@/actions/patient";
 
 export async function GET() {
     if (process.env.NODE_ENV !== "development") {
