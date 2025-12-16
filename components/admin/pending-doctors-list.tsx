@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/admin/empty-state";
 import { PendingDoctorCard } from "@/components/admin/pending-doctor-card";
 import toast from "react-hot-toast";
-import { approveDoctorVerification, rejectDoctorVerification } from "@/app/actions/admin";
+import { approveDoctorVerification, rejectDoctorVerification } from "@/actions/admin";
 
 type PendingDoctor = {
   id: string;

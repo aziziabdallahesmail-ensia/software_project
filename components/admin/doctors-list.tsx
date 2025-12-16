@@ -12,7 +12,7 @@ import {
   suspendDoctor, 
   promoteDoctor, 
   unpromoteDoctor 
-} from "@/app/actions/admin";
+} from "@/actions/admin";
 
 type Doctor = {
   id: string;
