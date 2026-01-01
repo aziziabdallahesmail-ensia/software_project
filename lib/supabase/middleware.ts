@@ -46,17 +46,31 @@ export async function updateSession(request: NextRequest) {
   // with the Supabase client, your users may be randomly logged out.
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
+  const pathname = request.nextUrl.pathname;
 
-  if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
-    // no user, respond by redirecting the user to the login page
+  // Public routes that don't require authentication
+  const publicRoutes = ["/", "/home", "/auth/login", "/auth/sign-up", "/auth/forgot-password", "/auth/error", "/auth/confirm", "/auth/sign-up-success", "/list_doctors"];
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith("/auth/") || pathname.startsWith("/list_doctors"));
+
+  // If no user and trying to access protected route
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
+  }
+
+  // If user is authenticated, check for role-based access
+  if (user) {
+    // Fetch user profile to get role (we'll use a simple approach via cookies or headers)
+    // For now, we'll let the page-level components handle role checks
+    // The middleware will just ensure users without roles go to role selection
+    
+    // Prevent authenticated users from accessing auth pages (except update-password)
+    if (pathname.startsWith("/auth/") && !pathname.startsWith("/auth/update-password")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
