@@ -34,6 +34,6 @@ export default async function DoctorProfilePage({ params }: PageProps) {
     );
   } catch (error) {
     console.error("Error loading doctor profile:", error);
-    redirect("/doctors");
+    redirect("/list_doctors");
   }
 }

@@ -11,7 +11,7 @@ export default async function PatientAppointmentsPage() {
   const user = await getCurrentUser();
 
   if (!user || user.role !== "patient") {
-    redirect("/role-selection");
+    redirect("/role_selection");
   }
 
   const appointments = await getPatientAppointments();
