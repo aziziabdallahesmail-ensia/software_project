@@ -98,7 +98,7 @@ export async function getDoctorAvailableSlots(doctorId: string, date?: Date) {
     return slots;
 }
 
-export async function bookAppointment(slotId: string, patientDescription: string) {
+export async function bookAppointment(formData: FormData) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -107,44 +107,100 @@ export async function bookAppointment(slotId: string, patientDescription: string
     }
 
     try {
-        // transaction 
-        const result = await prisma.$transaction(async (tx) => {
-            // 1 get the slot and lock it
-            const slot = await tx.availability.findUnique({
-                where: { id: slotId },
-            });
-
-            if (!slot || slot.status !== "available") {
-                throw new Error("Slot is no longer available");
-            }
-
-            // 2 create the appointment
-            const appointment = await tx.appointment.create({
-                data: {
-                    patientId: user.id,
-                    doctorId: slot.doctorId,
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
-                    patientDescription,
-                    status: "scheduled",
-                },
-            });
-
-            // 3 update slot status
-            await tx.availability.update({
-                where: { id: slotId },
-                data: { status: "booked" },
-            });
-
-            return appointment;
+        // Get the patient user
+        const patient = await prisma.profile.findUnique({
+            where: {
+                id: user.id,
+                role: "patient",
+            },
         });
 
-        revalidatePath("/patient/dashboard");
-        revalidatePath(`/doctor/${result.doctorId}`); // Revalidate doctor page
-        return { success: true, appointmentId: result.id };
+        if (!patient) {
+            throw new Error("Patient not found");
+        }
+
+        // Parse form data
+        const doctorId = formData.get("doctorId") as string;
+        const startTime = new Date(formData.get("startTime") as string);
+        const endTime = new Date(formData.get("endTime") as string);
+        const patientDescription = (formData.get("description") as string) || null;
+
+        // Validate input
+        if (!doctorId || !startTime || !endTime) {
+            throw new Error("Doctor, start time, and end time are required");
+        }
+
+        // Check if the doctor exists and is verified
+        const doctor = await prisma.profile.findUnique({
+            where: {
+                id: doctorId,
+                role: "doctor",
+                verificationStatus: "verified",
+            },
+        });
+
+        if (!doctor) {
+            throw new Error("Doctor not found or not verified");
+        }
+
+        // Check if the requested time slot is available
+        const overlappingAppointment = await prisma.appointment.findFirst({
+            where: {
+                doctorId: doctorId,
+                status: "scheduled",
+                OR: [
+                    {
+                        // New appointment starts during an existing appointment
+                        startTime: {
+                            lte: startTime,
+                        },
+                        endTime: {
+                            gt: startTime,
+                        },
+                    },
+                    {
+                        // New appointment ends during an existing appointment
+                        startTime: {
+                            lt: endTime,
+                        },
+                        endTime: {
+                            gte: endTime,
+                        },
+                    },
+                    {
+                        // New appointment completely overlaps an existing appointment
+                        startTime: {
+                            gte: startTime,
+                        },
+                        endTime: {
+                            lte: endTime,
+                        },
+                    },
+                ],
+            },
+        });
+
+        if (overlappingAppointment) {
+            throw new Error("This time slot is already booked");
+        }
+
+        // Create the appointment
+        const appointment = await prisma.appointment.create({
+            data: {
+                patientId: patient.id,
+                doctorId: doctor.id,
+                startTime,
+                endTime,
+                patientDescription,
+                status: "scheduled",
+            },
+        });
+
+        revalidatePath("/appointments");
+        return { success: true, appointment: appointment };
     } catch (error: any) {
-        console.error("Error booking appointment:", error);
-        return { success: false, error: error.message || "Failed to book appointment" };
+        console.error("Failed to book appointment:", error);
+        throw new Error("Failed to book appointment: " + error.message);
     }
 }
 
@@ -163,6 +219,7 @@ export async function getPatientAppointments() {
         include: {
             doctor: {
                 select: {
+                    id: true,
                     full_name: true,
                     specialty: true,
                 },

@@ -28,7 +28,7 @@ export async function setUserRole(formData: FormData) {
   }
 
   try {
-    if (role === "PATIENT") {
+    if (role === "patient") {
       await prisma.profile.update({
         where: {
           id: user.id,
