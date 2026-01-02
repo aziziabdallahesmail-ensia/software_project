@@ -10,12 +10,23 @@ if (error || !user) {
 return null;
 }
 try{
-    const LogedInUser = await prisma.profile.findUnique({
+    let LogedInUser = await prisma.profile.findUnique({
         where: {id: user.id},
     });
-    if(LogedInUser){
-        return LogedInUser;
+    
+    // If profile doesn't exist, create it
+    if(!LogedInUser){
+        LogedInUser = await prisma.profile.create({
+            data: {
+                id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || null,
+                role: "unassigned",
+            },
+        });
     }
+    
+    return LogedInUser;
 }
 catch (error) {
     console.error("Error fetching user from database:", error);

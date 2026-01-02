@@ -1,7 +1,7 @@
 import { PageTitle } from "@/components/page-title";
 
 export const metadata = {
-  title: "Doctor Dashboard - MediMeet",
+  title: "Doctor Dashboard ",
   description: "Manage your appointments and availability",
 };
 

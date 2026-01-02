@@ -133,8 +133,8 @@ const userProfiles = [
     title: "Patient",
     description: "Consultez des médecins et gérez votre santé",
     icon: User,
-    features: ["Consultations vidéo", "Dossier médical", "Rappels intelligents"],
-    link: "/role-selection",
+    features: ["Prise de rendez-vous", "Suivi médical", "Historique des consultations"],
+    link: "/role_selection",
     color: "from-blue-500 to-cyan-500"
   },
   {
@@ -142,19 +142,11 @@ const userProfiles = [
     title: "Professionnel de santé",
     description: "Gérez votre cabinet et vos consultations",
     icon: Stethoscope,
-    features: ["Tableau de bord", "Gestion des patients", "Téléconsultation"],
-    link: "/dashboard/doctors",
+    features: ["Tableau de bord", "Gestion des patients", "Disponibilités"],
+    link: "/doctor",
     color: "from-green-500 to-emerald-500"
   },
-  {
-    id: "admin",
-    title: "Administrateur",
-    description: "Supervisez la plateforme",
-    icon: Building2,
-    features: ["Analytics", "Gestion des accès", "Support"],
-    link: "/role-selection",
-    color: "from-purple-500 to-violet-500"
-  }
+  
 ];
 
 function Hero() {
@@ -177,7 +169,7 @@ function Hero() {
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
           <Button size="lg" className="h-12 px-8 text-base" asChild>
-            <Link href="/role-selection">
+            <Link href="/role_selection">
               Commencer gratuitement
               <ArrowRight className="size-4" />
             </Link>
@@ -188,8 +180,8 @@ function Hero() {
             className="h-12 px-8 text-base"
             asChild
           >
-            <Link href="/dashboard/doctors">
-              Voir le dashboard médecin
+            <Link href="/list_doctors">
+              Trouver un médecin
             </Link>
           </Button>
         </div>
@@ -444,13 +436,14 @@ function CTA() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button size="lg" className="h-12 px-8 text-base" asChild>
-            <Link href="/role-selection">
+            <Link href="/role_selection">
               Choisir mon profil
+              <ArrowRight className="size-4 ml-2" />
             </Link>
           </Button>
           <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
-            <Link href="/dashboard/doctors">
-              Voir le dashboard démo
+            <Link href="/list_doctors">
+              Parcourir les médecins
             </Link>
           </Button>
         </CardContent>
