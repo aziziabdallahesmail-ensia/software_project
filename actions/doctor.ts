@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { completeTwilioRoom } from "@/lib/twilio";
 
 export async function getDoctorProfile() {
   const supabase = await createClient();
@@ -289,16 +290,38 @@ export async function markAppointmentCompleted(formData: FormData) {
       return { success: false, error: "Only the doctor can mark appointments as completed" };
     }
 
-    // Check if the appointment end time has passed
+    // Check if the appointment start time has passed
     const now = new Date();
-    if (now < appointment.endTime) {
-      return { success: false, error: "Cannot mark appointment as completed before end time" };
+    if (now < appointment.startTime) {
+      return { success: false, error: "Cannot mark appointment as completed before start time" };
+    }
+
+    // If there's an active video room, complete it and calculate duration
+    let callDurationMinutes = 0;
+    if (appointment.videoRoomSid) {
+      try {
+        await completeTwilioRoom(appointment.videoRoomSid);
+        
+        // Calculate call duration if call was started
+        if (appointment.callStartedAt) {
+          const callEndedAt = new Date();
+          const durationMs = callEndedAt.getTime() - new Date(appointment.callStartedAt).getTime();
+          callDurationMinutes = Math.floor(durationMs / 60000);
+        }
+      } catch (error) {
+        console.error("Error completing Twilio room:", error);
+        // Continue even if Twilio fails
+      }
     }
 
     // Update appointment status to completed
     await prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: "completed" },
+      data: { 
+        status: "completed",
+        callEndedAt: appointment.videoRoomSid ? new Date() : appointment.callEndedAt,
+        callDurationMinutes: callDurationMinutes > 0 ? callDurationMinutes : appointment.callDurationMinutes,
+      },
     });
 
     revalidatePath("/appointments");

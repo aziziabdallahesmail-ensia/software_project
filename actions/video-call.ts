@@ -114,7 +114,7 @@ export async function initializeVideoCall(appointmentId: string) {
     );
   }
 
-  // Time window validation: Allow joining 10 minutes before to 30 minutes after appointment
+  // Time window validation: Allow joining 10 minutes before to 10 minutes after appointment
   const now = new Date();
   const startTime = new Date(appointment.startTime);
   const endTime = new Date(appointment.endTime);
@@ -123,7 +123,7 @@ export async function initializeVideoCall(appointmentId: string) {
   startBuffer.setMinutes(startBuffer.getMinutes() - 10);
 
   const endBuffer = new Date(endTime);
-  endBuffer.setMinutes(endBuffer.getMinutes() + 30);
+  endBuffer.setMinutes(endBuffer.getMinutes() + 10);
 
   if (now < startBuffer) {
     const minutesUntil = Math.floor(
@@ -222,6 +222,7 @@ export async function initializeVideoCall(appointmentId: string) {
 
 /**
  * End video call - completes Twilio room and updates appointment
+ * This should only be called when explicitly marking appointment as completed
  */
 export async function endVideoCall(appointmentId: string) {
   const supabase = await createClient();
@@ -267,7 +268,7 @@ export async function endVideoCall(appointmentId: string) {
     callDurationMinutes = Math.floor(durationMs / 60000); // Convert to minutes
   }
 
-  // Update appointment
+  // Update appointment - mark as completed
   const updatedAppointment = await prisma.appointment.update({
     where: { id: appointmentId },
     data: {
@@ -284,6 +285,47 @@ export async function endVideoCall(appointmentId: string) {
     success: true,
     callDurationMinutes,
     appointment: updatedAppointment,
+  };
+}
+
+/**
+ * Leave video call without marking as completed
+ * Allows users to disconnect and rejoin later
+ */
+export async function leaveVideoCall(appointmentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  // Get appointment
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: appointmentId },
+  });
+
+  if (!appointment) {
+    throw new Error("Appointment not found");
+  }
+
+  // Authorization check
+  if (appointment.doctorId !== user.id && appointment.patientId !== user.id) {
+    throw new Error("Unauthorized");
+  }
+
+  // Don't complete the Twilio room - leave it open for rejoining
+  // Just track that someone left
+  const now = new Date();
+  
+  // Update last activity time (we can add this field if needed)
+  // For now, just return success - room stays open
+
+  return {
+    success: true,
+    message: "Left call successfully. You can rejoin anytime within the allowed time window.",
   };
 }
 
@@ -403,7 +445,7 @@ export async function canJoinVideoCall(appointmentId: string) {
     startBuffer.setMinutes(startBuffer.getMinutes() - 10);
 
     const endBuffer = new Date(endTime);
-    endBuffer.setMinutes(endBuffer.getMinutes() + 30);
+    endBuffer.setMinutes(endBuffer.getMinutes() + 10);
 
     if (now < startBuffer) {
       const minutesUntil = Math.floor(
