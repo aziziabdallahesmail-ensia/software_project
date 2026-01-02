@@ -41,13 +41,13 @@ model Availability {
 }
 
 model Appointment {
-  id                 String            @id @default(uuid())
-  patientId          String            @db.Uuid
-  doctorId           String            @db.Uuid
-  startTime          DateTime
-  endTime            DateTime
-  status             AppointmentStatus @default(scheduled)
-  notes              String?
+  id                  String            @id @default(uuid())
+  patientId           String            @db.Uuid
+  doctorId            String            @db.Uuid
+  startTime           DateTime
+  endTime             DateTime
+  status              AppointmentStatus @default(scheduled)
+  notes               String?
   patientDescription  String?
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
