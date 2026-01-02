@@ -21,15 +21,15 @@ export default function DoctorAppointmentsList() {
 
   const appointments = data?.appointments || [];
 
-  // Categorize appointments
+  // Categorize appointments - will update whenever data changes
   const scheduledAppointments = appointments.filter(
-    (apt: any) => apt.status === "scheduled"
+    (apt: any) => apt.status.toLowerCase() === "scheduled"
   );
   const completedAppointments = appointments.filter(
-    (apt: any) => apt.status === "completed"
+    (apt: any) => apt.status.toLowerCase() === "completed"
   );
   const cancelledAppointments = appointments.filter(
-    (apt: any) => apt.status === "cancelled"
+    (apt: any) => apt.status.toLowerCase() === "cancelled"
   );
 
   return (

@@ -88,7 +88,7 @@ export function AppointmentCard({
 
   // Check if appointment can be marked as completed
   const canMarkCompleted = () => {
-    if (userRole !== "DOCTOR" || appointment.status !== "SCHEDULED") {
+    if (userRole !== "DOCTOR" || appointment.status.toLowerCase() !== "scheduled") {
       return false;
     }
     const now = new Date();
@@ -193,15 +193,16 @@ export function AppointmentCard({
 
   // Status color scheme
   const getStatusColors = () => {
-    switch (appointment.status) {
-      case "COMPLETED":
+    const status = appointment.status.toLowerCase();
+    switch (status) {
+      case "completed":
         return {
           bg: "bg-gradient-to-br from-green-500/10 to-teal-500/10",
           border: "border-green-500/30",
           text: "text-green-400",
           badge: "bg-green-500/20 text-green-300 border-green-500/40",
         };
-      case "CANCELLED":
+      case "cancelled":
         return {
           bg: "bg-gradient-to-br from-red-500/10 to-rose-500/10",
           border: "border-red-500/30",
@@ -236,8 +237,8 @@ export function AppointmentCard({
                 </p>
                 <h3 className="text-lg font-bold text-white">
                   {userRole === "DOCTOR"
-                    ? otherParty.name
-                    : `Dr. ${otherParty.name}`}
+                    ? otherParty.full_name
+                    : `Dr. ${otherParty.full_name}`}
                 </h3>
                 {userRole === "PATIENT" && (
                   <p className="text-sm text-muted-foreground">
@@ -298,6 +299,27 @@ export function AppointmentCard({
                 )}
               </Button>
             )}
+            
+            {/* Cancel Button - Visible on card for scheduled appointments */}
+            {appointment.status.toLowerCase() === "scheduled" && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCancelAppointment}
+                disabled={cancelLoading}
+                className="border-red-500/30 text-red-400 hover:bg-red-500/10 font-medium"
+              >
+                {cancelLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <X className="h-4 w-4 mr-1" />
+                    Annuler
+                  </>
+                )}
+              </Button>
+            )}
+            
             <Button
               size="sm"
               variant="outline"
@@ -328,7 +350,7 @@ export function AppointmentCard({
               </Badge>
             </div>
             <DialogDescription>
-              {appointment.status === "SCHEDULED"
+              {appointment.status.toLowerCase() === "scheduled"
                 ? "Gérer votre rendez-vous à venir"
                 : "Voir les informations du rendez-vous"}
             </DialogDescription>
@@ -347,8 +369,8 @@ export function AppointmentCard({
                   </p>
                   <p className="text-xl font-bold text-white">
                     {userRole === "DOCTOR"
-                      ? otherParty.name
-                      : `Dr. ${otherParty.name}`}
+                      ? otherParty.full_name
+                      : `Dr. ${otherParty.full_name}`}
                   </p>
                   {userRole === "DOCTOR" && (
                     <p className="text-sm text-muted-foreground mt-1">
@@ -418,7 +440,7 @@ export function AppointmentCard({
                 </div>
                 {userRole === "DOCTOR" &&
                   action !== "notes" &&
-                  appointment.status !== "CANCELLED" && (
+                  appointment.status.toLowerCase() !== "cancelled" && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -515,7 +537,7 @@ export function AppointmentCard({
               )}
 
               {/* Cancel Button - For scheduled appointments */}
-              {appointment.status === "SCHEDULED" && (
+              {appointment.status.toLowerCase() === "scheduled" && (
                 <Button
                   variant="outline"
                   onClick={handleCancelAppointment}

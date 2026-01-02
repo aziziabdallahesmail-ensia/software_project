@@ -140,7 +140,6 @@ export async function getDoctorAppointments() {
 
   const whereClause: any = {
     doctorId: user.id,
-    status: { in: ["scheduled"] },
   };
 
   const appointments = await prisma.appointment.findMany({
