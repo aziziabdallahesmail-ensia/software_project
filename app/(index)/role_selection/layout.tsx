@@ -13,13 +13,13 @@ export default async function roleselectionlayout({ children }: { children: Reac
   // Redirect users who have already completed this step
   if (user) {
     if (user.role === "patient") {
-      redirect("/doctors");
+      redirect("/list_doctors");
     } else if (user.role === "doctor") {
       // check verification status
       if (user.verificationStatus === "verified") {
         redirect("/doctor");
       } else {
-        redirect("/doctor/verification");
+        redirect("/doctor/still-in-verification");
       }
     } else if (user.role === "admin") {
       redirect("/admin");

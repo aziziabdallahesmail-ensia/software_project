@@ -68,7 +68,15 @@ export async function updateSession(request: NextRequest) {
     // Prevent authenticated users from accessing auth pages (except update-password)
     if (pathname.startsWith("/auth/") && !pathname.startsWith("/auth/update-password")) {
       const url = request.nextUrl.clone();
-      url.pathname = "/";
+      url.pathname = "/role_selection";
+      return NextResponse.redirect(url);
+    }
+
+    // Redirect authenticated users from root/home to role selection
+    // The role selection layout will then redirect based on their role
+    if (pathname === "/" || pathname === "/home") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/role_selection";
       return NextResponse.redirect(url);
     }
   }

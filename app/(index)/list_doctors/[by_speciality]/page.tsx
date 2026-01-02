@@ -12,7 +12,7 @@ export default async function DoctorSpecialtyPage({ params }: PageProps) {
 
   // Redirect to main doctors page if no specialty is provided
   if (!specialty) {
-    redirect("/doctors");
+    redirect("/list_doctors");
   }
 
   // Decode the specialty from URL

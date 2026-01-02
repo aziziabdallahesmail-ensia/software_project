@@ -21,7 +21,7 @@ export default async function DoctorProfileLayout({ children, params }: LayoutPr
   const { id } = await params;
   const { doctor } = await getDoctorById(id);
 
-  if (!doctor) redirect("/doctors");
+  if (!doctor) redirect("/list_doctors");
 
   return (
     <div className="container mx-auto">
