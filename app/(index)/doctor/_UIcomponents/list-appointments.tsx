@@ -35,7 +35,7 @@ export default function DoctorAppointmentsList() {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 shadow-xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
         <div className="relative flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
@@ -125,8 +125,8 @@ export default function DoctorAppointmentsList() {
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center gap-4">
               <div className="relative">
-                <div className="h-16 w-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-20 animate-ping absolute"></div>
-                <div className="h-16 w-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center relative">
+                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 opacity-20 animate-ping absolute"></div>
+                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center relative">
                   <Loader2 className="h-8 w-8 text-white animate-spin" />
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function DoctorAppointmentsList() {
                 <div className="h-24 w-24 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-inner">
                   <CalendarX2 className="h-12 w-12 text-slate-400" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center">
+                <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                   <span className="text-white text-xs font-bold">0</span>
                 </div>
               </div>

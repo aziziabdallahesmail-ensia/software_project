@@ -118,7 +118,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 shadow-xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
         <div className="relative flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
@@ -192,7 +192,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
               {/* Current Slots */}
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-purple-400" />
+                  <Clock className="h-5 w-5 text-green-400" />
                   Créneaux actuels
                 </h3>
 
@@ -201,7 +201,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="relative">
                       <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10 mb-4">
-                        <CalendarClock className="h-8 w-8 text-purple-400" />
+                        <CalendarClock className="h-8 w-8 text-blue-400" />
                       </div>
                       <p className="text-slate-300 font-medium mb-2">
                         Aucun créneau défini
@@ -273,7 +273,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
               {/* Add Button */}
               <Button
                 onClick={() => setShowForm(true)}
-                className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                className="w-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02]"
               >
                 <Plus className="h-5 w-5 mr-2" />
                 Ajouter un créneau de disponibilité

@@ -14,7 +14,6 @@ import {
   AlertCircle,
   Stethoscope,
   CalendarCheck,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -146,7 +145,6 @@ export function DoctorProfile({ doctor, availableDays }: DoctorProfileProps) {
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 h-5 w-5" />
                 Prendre Rendez-vous
               </>
             )}
