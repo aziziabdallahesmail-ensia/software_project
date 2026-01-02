@@ -74,7 +74,7 @@ export async function submitVerificationDocument(credentialUrl: string) {
   }
 }
 
-export async function setAvailability(slots: { startTime: Date; endTime: Date }[]) {
+export async function setAvailability(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -92,15 +92,37 @@ export async function setAvailability(slots: { startTime: Date; endTime: Date }[
   }
 
   try {
-    // multiple availability slots
-    await prisma.availability.createMany({
-      data: slots.map((slot) => ({
+    // Parse form data
+    const startTimeStr = formData.get("startTime") as string;
+    const endTimeStr = formData.get("endTime") as string;
+
+    if (!startTimeStr || !endTimeStr) {
+      return { success: false, error: "Start time and end time are required" };
+    }
+
+    const startTime = new Date(startTimeStr);
+    const endTime = new Date(endTimeStr);
+
+    // Validate dates
+    if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+      return { success: false, error: "Invalid date format" };
+    }
+
+    if (startTime >= endTime) {
+      return { success: false, error: "End time must be after start time" };
+    }
+
+    // Create availability slot
+    await prisma.availability.create({
+      data: {
         doctorId: user.id,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
+        startTime: startTime,
+        endTime: endTime,
         status: "available",
-      })),
+      },
     });
+
+    revalidatePath("/doctor");
     return { success: true };
   } catch (error) {
     console.error("Error setting availability:", error);
