@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export default function VideoCallPage() {
+export default function PatientVideoCallPage() {
   const searchParams = useSearchParams()
   const appointmentId = searchParams.get("appointmentId")
 
@@ -22,8 +22,8 @@ export default function VideoCallPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href="/doctor">
-                <Button className="w-full">Go to Dashboard</Button>
+              <Link href="/appointments">
+                <Button className="w-full">Go to Appointments</Button>
               </Link>
             </CardContent>
           </Card>
@@ -32,5 +32,5 @@ export default function VideoCallPage() {
     )
   }
 
-  return <VideoCall appointmentId={appointmentId} backLink="/doctor" />
+  return <VideoCall appointmentId={appointmentId} backLink="/appointments" />
 }
