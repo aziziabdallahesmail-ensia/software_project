@@ -87,7 +87,7 @@ export async function rejectDoctorVerification(doctorId: string) {
         throw new Error("Unauthorized");
     }
 
-    const adminProfile = await prisma.profile.findUnique({\n        where: { id: user.id },\n    });\n\n    if (adminProfile?.role !== "admin") {\n        throw new Error("Forbidden: Admin access required");\n    }
+    const adminProfile = await prisma.profile.findUnique({where: { id: user.id },});if (adminProfile?.role !== "admin") {throw new Error("Forbidden: Admin access required");}
 
     try {
         // set status rejected
@@ -114,7 +114,7 @@ export async function getActiveDoctors() {
         throw new Error("Unauthorized");
     }
 
-    const adminProfile = await prisma.profile.findUnique({\n        where: { id: user.id },\n    });\n\n    if (adminProfile?.role !== "admin") {\n        throw new Error("Forbidden: Admin access required");\n    }
+    const adminProfile = await prisma.profile.findUnique({where: { id: user.id },});if (adminProfile?.role !== "admin") {throw new Error("Forbidden: Admin access required");}
 
     const activeDoctors = await prisma.profile.findMany({
         where: {
@@ -155,7 +155,7 @@ export async function getAllDoctors() {
         throw new Error("Unauthorized");
     }
 
-    const adminProfile = await prisma.profile.findUnique({\n        where: { id: user.id },\n    });\n\n    if (adminProfile?.role !== "admin") {\n        throw new Error("Forbidden: Admin access required");\n    }
+    const adminProfile = await prisma.profile.findUnique({where: { id: user.id },});if (adminProfile?.role !== "admin") {throw new Error("Forbidden: Admin access required");}
 
     const allDoctors = await prisma.profile.findMany({
         where: {
@@ -186,7 +186,7 @@ export async function suspendDoctor(doctorId: string) {
         throw new Error("Unauthorized");
     }
 
-    const adminProfile = await prisma.profile.findUnique({\n        where: { id: user.id },\n    });\n\n    if (adminProfile?.role !== "admin") {\n        throw new Error("Forbidden: Admin access required");\n    }
+    const adminProfile = await prisma.profile.findUnique({where: { id: user.id },});if (adminProfile?.role !== "admin") {throw new Error("Forbidden: Admin access required");}
 
     try {
         // deactivate account
@@ -213,7 +213,7 @@ export async function activateDoctor(doctorId: string) {
         throw new Error("Unauthorized");
     }
 
-    const adminProfile = await prisma.profile.findUnique({\n        where: { id: user.id },\n    });\n\n    if (adminProfile?.role !== "admin") {\n        throw new Error("Forbidden: Admin access required");\n    }
+    const adminProfile = await prisma.profile.findUnique({where: { id: user.id },});if (adminProfile?.role !== "admin") {throw new Error("Forbidden: Admin access required");}
 
     try {
         // reactivate account
@@ -240,7 +240,7 @@ export async function promoteDoctor(doctorId: string) {
         throw new Error("Unauthorized");
     }
 
-    const adminProfile = await prisma.profile.findUnique({\n        where: { id: user.id },\n    });\n\n    if (adminProfile?.role !== "admin") {\n        throw new Error("Forbidden: Admin access required");\n    }
+    const adminProfile = await prisma.profile.findUnique({where: { id: user.id },});if (adminProfile?.role !== "admin") {throw new Error("Forbidden: Admin access required");}
 
     try {
         // mark as featured
@@ -267,7 +267,7 @@ export async function unpromoteDoctor(doctorId: string) {
         throw new Error("Unauthorized");
     }
 
-    const adminProfile = await prisma.profile.findUnique({\n        where: { id: user.id },\n    });\n\n    if (adminProfile?.role !== "admin") {\n        throw new Error("Forbidden: Admin access required");\n    }
+    const adminProfile = await prisma.profile.findUnique({where: { id: user.id },});if (adminProfile?.role !== "admin") {throw new Error("Forbidden: Admin access required");}
 
     try {
         // remove featured
