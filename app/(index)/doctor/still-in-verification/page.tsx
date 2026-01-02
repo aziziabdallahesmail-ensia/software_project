@@ -113,10 +113,10 @@ export default async function VerificationPage() {
                   <Link href="/doctor/update-profile">Mettre à jour le profil</Link>
                 </Button>
                 <Link
-                  href="/"
+                  href="/doctor/still-in-verification"
                   className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors"
                 >
-                  Retour à l&apos;accueil
+                  Actualiser la page
                 </Link>
               </>
             ) : (
@@ -126,7 +126,7 @@ export default async function VerificationPage() {
                   size="lg"
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl h-12"
                 >
-                  <Link href="/">Retour à l&apos;accueil</Link>
+                  <Link href="/list_doctors">Explorer les médecins</Link>
                 </Button>
                 <Link
                   href="/contact-support"

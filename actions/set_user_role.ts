@@ -15,11 +15,22 @@ export async function setUserRole(formData: FormData) {
     throw new Error("Unauthorized");
   }
 
-  const USer = await prisma.profile.findUnique({
+  // Check if profile exists, if not create it
+  let profile = await prisma.profile.findUnique({
     where: { id: user.id },
   });
 
-  if (!USer) throw new Error("User not found in database");
+  if (!profile) {
+    // Create the profile if it doesn't exist
+    profile = await prisma.profile.create({
+      data: {
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || null,
+        role: "unassigned",
+      },
+    });
+  }
 
   const role = formData.get("role") as string;
 
@@ -39,7 +50,7 @@ export async function setUserRole(formData: FormData) {
       });
 
       revalidatePath("/");
-      return { success: true, redirect: "/doctors" };
+      return { success: true, redirect: "/list_doctors" };
     }
 
     if (role === "doctor") {
@@ -88,13 +99,26 @@ export async function getCurrentUser() {
   }
 
   try {
-    const user = await prisma.profile.findUnique({
+    // Check if profile exists, if not create it
+    let profile = await prisma.profile.findUnique({
       where: {
         id: userId,
       },
     });
 
-    return user;
+    if (!profile) {
+      // Create the profile if it doesn't exist
+      profile = await prisma.profile.create({
+        data: {
+          id: userId,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || null,
+          role: "unassigned",
+        },
+      });
+    }
+
+    return profile;
   } catch (error) {
     console.error("Failed to get user information:", error);
     return null;
