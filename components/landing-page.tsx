@@ -15,7 +15,6 @@ import {
   FileText,
   LucideIcon,
   ShieldCheck,
-  Sparkles,
   Stethoscope,
   UsersRound,
   Video,
@@ -45,8 +44,8 @@ type Testimonial = {
 };
 
 const heroMetrics: Metric[] = [
-  { label: "Patients accompagnés", value: "120k+" },
-  { label: "Professionnels certifiés", value: "1 200+" },
+  { label: "Patients accompagnés", value: "500+" },
+  { label: "Professionnels certifiés", value: "30" },
   { label: "Satisfaction moyenne", value: "4.9/5" },
 ];
 
@@ -55,28 +54,28 @@ const steps: Step[] = [
     id: "01",
     title: "Créez votre profil",
     description:
-      "Renseignez vos besoins et votre historique. Notre moteur de recommandation personnalise automatiquement votre parcours de soins.",
+      "Inscrivez-vous en quelques secondes, choisissez votre rôle patient ou médecins.",
     icon: UsersRound,
   },
   {
     id: "02",
     title: "Réservez en quelques clics",
     description:
-      "Consultez la disponibilité des spécialistes, synchronisez votre agenda et recevez des rappels intelligents.",
+      "Consultez la disponibilité des spécialistes et prenez rendez-vous instantanément.",
     icon: CalendarCheck,
   },
   {
     id: "03",
     title: "Consultez en vidéo HD",
     description:
-      "Profitez d'une expérience sécurisée, chiffrée de bout en bout, avec partage d'ordonnances et de documents.",
+      "Profitez d'une consultation sécurisée par vidéo synchronisée entre patients et médecins.",
     icon: Video,
   },
   {
     id: "04",
-    title: "Suivez vos dossiers",
+    title: "Pour Medcins et Cliniques",
     description:
-      "Retrouvez toutes vos notes, recommandations et prescriptions dans un espace partagé avec vos praticiens.",
+      "Gérez facilement vos rendez-vous, patients et consultations en ligne via notre tableau de bord dédié.",
     icon: FileText,
   },
 ];
@@ -84,44 +83,44 @@ const steps: Step[] = [
 const testimonials: Testimonial[] = [
   {
     quote:
-      "La consultation vidéo m'a redonné du temps. En moins de 10 minutes, j'avais un diagnostic complet et mon ordonnance sécurisée.",
-    name: "Sarah P.",
+      "La plateforme m'a permis de trouver rapidement un spécialiste adapté à mes besoins, tout en assurant la securité de mes données médicales.",
+    name: "Sarah Amina.",
     role: "Patiente",
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBuaz8D3rtFUWnWk0t5zZBT5BykYhMEtlK2ejwuX0RoeJ0sMaUVynW4mvJdNHR4MUbb_7hve4LggmaT4LQexPF01xttPf62OkfGfHJmEcEwCxQ8bx4d6rkoOadeB_M70Wx0VeiHPnUPrYZuDUmwTzdKFkhr2yU24syIW4SBurDbzXAkH_GZ7Cb1mhZUFj1-rzX4TUhCJ7apnZY0EB3PIBgSG8MNy8PajsAPV5s4JkQ3Ak_KLBZY-I7liWBCkLrx3_hjrLBtPH2bMEM",
+      "/images/female_patient.png",
   },
   {
     quote:
-      "Je peux suivre mes patients à distance, partager mes comptes rendus et automatiser mes contrôles post-consultation.",
-    name: "Dr. Robert M.",
+      "En tant que cardiologue, cette plateforme m'a aidé à gérer mes rendez-vous et à offrir des consultations à distance en toute sécurité.",
+    name: "Dr. Ahmed Riadh.",
     role: "Cardiologue",
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuB8q6cyev4UPoSarm0R-5P5mS0ponIYpXxup0ctDfV9zWee5R4uGNCU6hh6BJtDPk2P9xTlQrQNRcy-2k8D3j_-h6JNy5rJV1OTIs_wjpYmMqt05zQGjKcbKnvccxiwzid7zLcAeEJfXIVWXF9reZqKJo53upsiOtMPwUw3LxXo9U2w3qhtHaf0dzE4AnLHZdxyCX7h3CUS5uJDzBaIoR1ggedugjc4eIyjjM2v-4VRhFxIsJXVMGBX-Dd5ValV7sYqfAhK5Y3DW0o",
+      "/images/old_doctor.png",
   },
   {
     quote:
       "Trouver un spécialiste pour ma famille n'a jamais été aussi simple. Tout est centralisé et prêt à être consulté.",
-    name: "James T.",
+    name: "Ibrahim Esmail.",
     role: "Patient",
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAbH8DeEsRc6BABuLmX0WG0y7Q6x9st7sC_iNCBZK3jvvjZk-T43oRKycQI98AfoCVMpzcw-ULvFUOX8TP8pWlayvJjjDOWJ0cWQihsx3qIvzgcYN-bOtHT8phuLMAN5qGSL-a4ZW3O3_p_dCU9rYqkDe3IwNjnVrqkdcY2bVAyM77VqiSapl0RZyzUsFzFfsuUrZjYcEYkAoEsECDKFhvufD19wQIq98QhbQHaLxX2hM6EBnxRmdyLdSEaNQv6pQkw543_BOgCDkw",
+      "/images/male_patient.png",
   },
 ];
 
 const guarantees = [
   {
-    title: "Sécurité clinique",
-    description: "Praticiens vérifiés et dossiers hébergés sur une infrastructure HDS.",
+    title: "Securité des données",
+    description: "Votre données médicales sont protégées selon les normes les plus strictes.",
     icon: ShieldCheck,
   },
   {
-    title: "Suivi continu",
-    description: "Messages sécurisés, alertes intelligentes et rappels personnalisés.",
+    title: "Experience utilisateur optimale",
+    description: " Interface intuitive et support réactif pour une utilisation sans friction.",
     icon: CheckCircle2,
   },
   {
-    title: "Support humain",
-    description: "Conciergerie santé disponible 7j/7 pour vos démarches administratives.",
+    title: "Medecins certifiés et vérifiés",
+    description: "Tous les professionnels sont rigoureusement sélectionnés et certifiés.",
     icon: Stethoscope,
   },
 ];
@@ -133,7 +132,7 @@ const userProfiles = [
     title: "Patient",
     description: "Consultez des médecins et gérez votre santé",
     icon: User,
-    features: ["Prise de rendez-vous", "Suivi médical", "Historique des consultations"],
+    features: ["Prise de rendez-vous", "Suivi médical", "Consultations vidéo"],
     link: "/role_selection",
     color: "from-blue-500 to-cyan-500"
   },
@@ -142,8 +141,8 @@ const userProfiles = [
     title: "Professionnel de santé",
     description: "Gérez votre cabinet et vos consultations",
     icon: Stethoscope,
-    features: ["Tableau de bord", "Gestion des patients", "Disponibilités"],
-    link: "/doctor",
+    features: ["Tableau de bord", "Gestion des patients", "Consultations en ligne"],
+    link: "/role_selection",
     color: "from-green-500 to-emerald-500"
   },
   
@@ -154,7 +153,6 @@ function Hero() {
     <section className="grid gap-10 lg:grid-cols-[0.9fr,1fr] lg:items-center">
       <div className="space-y-8 text-center lg:text-left">
         <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-muted/40 px-4 py-1 text-xs font-medium text-muted-foreground">
-          <Sparkles className="size-3.5 text-primary" />
           La santé connectée et humaine
         </div>
         <div className="space-y-6">
@@ -164,7 +162,7 @@ function Hero() {
           </h1>
           <p className="text-lg text-muted-foreground">
             Une plateforme pensée pour les patients exigeants et les praticiens modernes :
-            accès instantané, dossiers partagés et expérience vidéo hautement sécurisée.
+            accès instantanéet et expérience vidéo hautement sécurisée.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -199,10 +197,10 @@ function Hero() {
       <Card className="border-border/70 bg-gradient-to-br from-background via-background to-primary/5 shadow-2xl">
         <CardHeader className="space-y-2">
           <Badge className="w-fit bg-primary/15 text-primary">Session en direct</Badge>
-          <CardTitle className="text-2xl">Téléconsultation sécurisée</CardTitle>
+          <CardTitle className="text-2xl"> </CardTitle>
           <CardDescription>
-            Vue opérateur montrant la connexion vidéo, les notes et les actions rapides
-            partagées avec votre praticien.
+            Découvrez comment la téléconsultation révolutionne l'accès aux soins,
+            offrant flexibilité et sécurité tant pour les patients que pour les professionnels de santé.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -210,19 +208,19 @@ function Hero() {
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 overflow-hidden rounded-full border border-border/70">
                 <img
-                  src="https://images.unsplash.com/photo-1601831043304-45e85563f829?auto=format&fit=crop&w=200&q=80"
+                  src="/images/young_doctor.png"
                   alt="Médecin"
                   className="h-full w-full object-cover"
                 />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Consultation avec</p>
-                <p className="text-base font-semibold text-foreground">Dr. Élodie Martin</p>
+                <p className="text-base font-semibold text-foreground">Dr. Mohammed Amine</p>
               </div>
             </div>
             <div className="rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
-              « Pensez à joindre vos analyses avant la fin de l&apos;appel. Les ordonnances seront
-              envoyées automatiquement. »
+              « La téléconsultation m'a permis d'élargir l'accès aux soins pour mes patients, tout en assurant la confidentialité et la sécurité de leurs données médicales. »
+
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -238,9 +236,9 @@ function Hero() {
             <Card className="border-border/60 bg-primary/5">
               <CardContent className="flex flex-col gap-1 p-4">
                 <p className="text-xs uppercase text-primary">Qualité service</p>
-                <p className="text-lg font-semibold text-primary">99.9% uptime</p>
+                <p className="text-lg font-semibold text-primary">Vidéo HD</p>
                 <p className="text-sm text-muted-foreground">
-                  Supervision temps réel de l&apos;infrastructure.
+                  On vous garantit une qualité vidéo HD pour des consultations fluides et efficaces.
                 </p>
               </CardContent>
             </Card>
@@ -263,7 +261,7 @@ function HowItWorks() {
             Comment ça marche&nbsp;?
           </h2>
           <p className="text-lg text-muted-foreground">
-            Un accompagnement complet, de la prise de rendez-vous à la documentation médicale.
+            Un accompagnement complet, de la prise de rendez-vous à la consultation.
           </p>
         </div>
       </div>
@@ -306,14 +304,14 @@ function UserProfiles() {
         </Badge>
         <div className="space-y-3">
           <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
-            Pour qui est fait MedConnect&nbsp;?
+            Pour qui est fait MédiConnect&nbsp;?
           </h2>
           <p className="text-lg text-muted-foreground">
             Découvrez l&apos;expérience adaptée à votre profil
           </p>
         </div>
       </div>
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 max-w-4xl mx-auto">
         {userProfiles.map((profile) => (
           <Card key={profile.id} className="border-border/70 bg-background/80 backdrop-blur hover:shadow-lg transition-all duration-300">
             <CardHeader className="text-center pb-4">
@@ -389,7 +387,7 @@ function Testimonials() {
         </Badge>
         <h2 className="text-3xl font-semibold text-foreground">Ils utilisent déjà la plateforme</h2>
         <p className="text-muted-foreground">
-          Utilisateurs exigeants, praticiens spécialisés et familles connectées.
+          Des patients et des professionnels de santé partagent leur expérience.
         </p>
       </div>
       <div className="grid gap-6 lg:grid-cols-3">

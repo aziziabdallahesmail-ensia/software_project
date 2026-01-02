@@ -73,18 +73,13 @@ export function Header({ user }: HeaderProps) {
   const getNavigationLinks = () => {
     if (!user) return [];
 
-    const baseLinks = [
-      { href: "/home", label: "Accueil", icon: Home },
-    ];
-
     if (user.role === "admin") {
       return [
-        ...baseLinks,
+        { href: "/home", label: "Accueil", icon: Home },
         { href: "/admin", label: "Tableau de bord", icon: Settings },
         { href: "/admin/pending-verification", label: "Vérifications", icon: Users },
         { href: "/admin/configuration", label: "Configuration", icon: Settings },
-        { href: "/list_doctors", label: "Médecins", icon: Stethoscope },
-        { href: "/appointments", label: "Rendez-vous", icon: Calendar },
+        { href: "/list_doctors", label: "Médecins", icon: Stethoscope }, 
       ];
     }
 
@@ -92,26 +87,22 @@ export function Header({ user }: HeaderProps) {
       const isVerified = user.verificationStatus === "approved";
       if (isVerified) {
         return [
-          ...baseLinks,
           { href: "/doctor", label: "Mon espace", icon: Stethoscope },
           { href: "/appointments", label: "Mes rendez-vous", icon: Calendar },
         ];
       }
-      return [
-        ...baseLinks,
-        { href: "/doctor/still-in-verification", label: "Statut vérification", icon: Clock },
-      ];
+      
     }
 
     if (user.role === "patient") {
       return [
-        ...baseLinks,
+        { href: "/home", label: "Accueil", icon: Home },
         { href: "/list_doctors", label: "Trouver un médecin", icon: Stethoscope },
         { href: "/appointments", label: "Mes rendez-vous", icon: Calendar },
       ];
     }
 
-    return baseLinks;
+    return [];
   };
 
   const getRoleBadge = () => {
