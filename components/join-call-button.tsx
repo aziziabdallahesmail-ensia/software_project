@@ -40,9 +40,9 @@ export function JoinCallButton({
       const startBuffer = new Date(start)
       startBuffer.setMinutes(startBuffer.getMinutes() - 10)
 
-      // Allow joining up to 30 minutes after end time
+      // Allow joining up to 10 minutes after end time
       const endBuffer = new Date(end)
-      endBuffer.setMinutes(endBuffer.getMinutes() + 30)
+      endBuffer.setMinutes(endBuffer.getMinutes() + 10)
 
       if (now < startBuffer) {
         const minutesUntil = Math.floor(

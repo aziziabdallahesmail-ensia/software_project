@@ -16,6 +16,7 @@ import {
   CheckCircle,
   FileText,
   AlertCircle,
+  Video,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -31,6 +32,7 @@ import {
   addAppointmentNotes,
   markAppointmentCompleted,
 } from "@/actions/doctor";
+import { JoinCallButton } from "@/components/join-call-button";
 import useFetch from "@/hooks/use-fetch";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -92,8 +94,8 @@ export function AppointmentCard({
       return false;
     }
     const now = new Date();
-    const appointmentEndTime = new Date(appointment.endTime);
-    return now >= appointmentEndTime;
+    const appointmentStartTime = new Date(appointment.startTime);
+    return now >= appointmentStartTime;
   };
 
   // Handle cancel appointment
@@ -114,17 +116,6 @@ export function AppointmentCard({
   // Handle mark as completed
   const handleMarkCompleted = async () => {
     if (completeLoading) return;
-
-    // Check if appointment end time has passed
-    const now = new Date();
-    const appointmentEndTime = new Date(appointment.endTime);
-
-    if (now < appointmentEndTime) {
-      alert(
-        "Impossible de marquer le rendez-vous comme terminé avant l'heure de fin prévue."
-      );
-      return;
-    }
 
     if (
       window.confirm(
@@ -247,12 +238,23 @@ export function AppointmentCard({
                 )}
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className={`${statusColors.badge} font-semibold px-3 py-1`}
-            >
-              {appointment.status}
-            </Badge>
+            <div className="flex gap-2">
+              <Badge
+                variant="outline"
+                className={`${statusColors.badge} font-semibold px-3 py-1`}
+              >
+                {appointment.status}
+              </Badge>
+              {appointment.videoRoomName && (
+                <Badge
+                  variant="outline"
+                  className="bg-purple-500/20 text-purple-300 border-purple-500/40 font-semibold px-3 py-1"
+                >
+                  <Video className="h-3 w-3 mr-1" />
+                  Video
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Divider */}
@@ -279,6 +281,46 @@ export function AppointmentCard({
               </div>
             </div>
           </div>
+
+          {/* Video Call Duration - Show for completed appointments with video calls */}
+          {appointment.status.toLowerCase() === "completed" && appointment.callDurationMinutes && (
+            <div className="mb-4 bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <Video className="h-5 w-5 text-purple-400" />
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">Durée de la consultation vidéo</p>
+                  <p className="text-sm font-semibold text-purple-300">
+                    {appointment.callDurationMinutes} minutes
+                  </p>
+                </div>
+                <Badge variant="outline" className="bg-purple-500/20 text-purple-300 border-purple-500/40">
+                  Terminée
+                </Badge>
+              </div>
+            </div>
+          )}
+
+          {/* Video Call Section - Prominent for scheduled appointments */}
+          {appointment.status.toLowerCase() === "scheduled" && (
+            <div className="mb-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Video className="h-5 w-5 text-purple-400" />
+                <h4 className="text-sm font-semibold text-purple-300">Consultation vidéo</h4>
+                {appointment.videoRoomName && (
+                  <Badge variant="outline" className="bg-green-500/20 text-green-300 border-green-500/40 text-xs">
+                    Salle créée
+                  </Badge>
+                )}
+              </div>
+              <JoinCallButton
+                appointmentId={appointment.id}
+                startTime={appointment.startTime}
+                endTime={appointment.endTime}
+                status={appointment.status}
+                userRole={userRole.toLowerCase() as "doctor" | "patient"}
+              />
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
@@ -412,6 +454,43 @@ export function AppointmentCard({
               </div>
             </div>
 
+            {/* Video Call Information */}
+            {appointment.videoRoomName && (
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/40 rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <Video className="h-6 w-6 text-purple-400" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-purple-300 uppercase tracking-wide">
+                      Consultation vidéo
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {appointment.status.toLowerCase() === "completed" 
+                        ? "Consultation terminée"
+                        : "Salle de consultation vidéo créée"}
+                    </p>
+                  </div>
+                  <Badge 
+                    variant="outline" 
+                    className={
+                      appointment.status.toLowerCase() === "completed"
+                        ? "bg-green-500/20 text-green-300 border-green-500/40"
+                        : "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                    }
+                  >
+                    {appointment.status.toLowerCase() === "completed" ? "Terminée" : "Active"}
+                  </Badge>
+                </div>
+                {appointment.callDurationMinutes && (
+                  <div className="bg-background/40 rounded-lg p-3 border border-purple-500/30">
+                    <p className="text-sm text-white">
+                      <span className="text-muted-foreground">Durée de l'appel:</span>{" "}
+                      <span className="font-semibold text-purple-300">{appointment.callDurationMinutes} minutes</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Patient Description */}
             {appointment.patientDescription && (
               <div className="bg-background/40 rounded-lg p-4 border border-border">
@@ -515,6 +594,17 @@ export function AppointmentCard({
 
           <DialogFooter className="flex flex-col sm:flex-row gap-3">
             <div className="flex gap-2 flex-1">
+              {/* Join Video Call Button - Prominent in dialog */}
+              {appointment.status.toLowerCase() === "scheduled" && (
+                <JoinCallButton
+                  appointmentId={appointment.id}
+                  startTime={appointment.startTime}
+                  endTime={appointment.endTime}
+                  status={appointment.status}
+                  userRole={userRole.toLowerCase() as "doctor" | "patient"}
+                />
+              )}
+              
               {/* Mark as Complete Button - Only for doctors */}
               {canMarkCompleted() && (
                 <Button

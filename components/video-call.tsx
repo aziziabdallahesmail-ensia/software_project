@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Loader2 } from "lucide-react"
-import { initializeVideoCall, endVideoCall } from "@/actions/video-call"
+import { initializeVideoCall, leaveVideoCall } from "@/actions/video-call"
 import toast from "react-hot-toast"
 
 interface VideoCallProps {
@@ -36,7 +36,6 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
   const [isConnecting, setIsConnecting] = useState(true)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [appointmentData, setAppointmentData] = useState<any>(null)
-  const [notes, setNotes] = useState("")
 
   // Connect to Twilio Video Room
   useEffect(() => {
@@ -182,7 +181,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
     }
   }
 
-  // End call
+  // Leave call (without marking as completed)
   const handleEndCall = async () => {
     try {
       // Disconnect from Twilio room
@@ -190,14 +189,14 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
         room.disconnect()
       }
 
-      // Update backend
-      await endVideoCall(appointmentId)
+      // Leave call without completing appointment
+      await leaveVideoCall(appointmentId)
       
-      toast.success("Call ended")
+      toast.success("You left the call. You can rejoin anytime during the appointment window.")
       router.push(backLink)
     } catch (error: any) {
-      console.error("Error ending call:", error)
-      toast.error("Failed to end call properly")
+      console.error("Error leaving call:", error)
+      toast.error("Failed to leave call properly")
       router.push(backLink)
     }
   }
@@ -365,28 +364,6 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {remoteParticipant?.identity?.includes("patient") || localParticipant?.identity?.includes("patient") ? "In call" : "Waiting"}
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <label className="text-sm font-medium mb-2 block">Session notes</label>
-                <Textarea 
-                  rows={6} 
-                  placeholder="Add notes for this session (private)" 
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
-                <div className="mt-3">
-                  <Button 
-                    className="w-full" 
-                    variant="outline"
-                    onClick={() => {
-                      // TODO: Save notes to appointment
-                      toast.success("Notes saved")
-                    }}
-                  >
-                    Save notes
-                  </Button>
                 </div>
               </div>
             </CardContent>
