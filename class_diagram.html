@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare System Class Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 1200px;
+        }
+        h1 { color: #2c3e50; text-align: center; }
+        .mermaid { display: flex; justify-content: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Healthcare System Architecture</h1>
+        <div class="mermaid">
+            classDiagram
+                %% Packages for logical grouping
+                namespace Data_Entities {
+                    class Patient {
+                        +String id
+                        +String first_name
+                        +String last_name
+                        +String email
+                        +DateTime birth_date
+                        +Boolean privacy_consent
+                        +register()
+                    }
+                    class Appointment {
+                        +String id
+                        +DateTime schedule
+                        +Status status
+                        +String reason
+                    }
+                    class Doctor {
+                        +String id
+                        +String name
+                        +String specialization
+                    }
+                }
+
+                namespace Services_Logic {
+                    class PatientService {
+                        +createUser(user)
+                        +getPatient(userId)
+                        +registerPatient(formData)
+                    }
+                    class AppointmentService {
+                        +createAppointment(params)
+                        +getRecentAppointmentList()
+                        +updateAppointment(id, params)
+                    }
+                }
+
+                namespace Validation_DTOs {
+                    class PatientFormValidation {
+                        +String name
+                        +String email
+                        +String phone
+                    }
+                    class UserFormValidation {
+                        +String name
+                        +String email
+                    }
+                }
+
+                %% Relationships
+                Patient "1" --> "*" Appointment : has
+                Doctor "1" -- "*" Appointment : assigned_to
+                
+                PatientService ..> Patient : manages
+                AppointmentService ..> Appointment : manages
+                
+                PatientService ..> UserFormValidation : validates_with
+                
+                %% UI Components
+                class PatientForm {
+                    +onSubmit()
+                }
+                class AppointmentModal {
+                    +type: string
+                }
+
+                PatientForm ..> PatientService : calls
+                AppointmentModal ..> AppointmentService : calls
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            flowchart: { useMaxWidth: true, htmlLabels: true }
+        });
+    </script>
+</body>
+</html>
