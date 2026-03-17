@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -6,10 +7,9 @@ import { useRouter } from "next/navigation";
 import {
   User,
   Calendar,
-  Clock,
+  Clock3,
   Medal,
   FileText,
-  ChevronDown,
   ChevronUp,
   AlertCircle,
   Stethoscope,
@@ -53,7 +53,6 @@ export function DoctorProfile({ doctor, availableDays }: DoctorProfileProps) {
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const router = useRouter();
 
-  // Calculate total available slots
   const totalSlots = availableDays?.reduce(
     (total, day) => total + day.slots.length,
     0
@@ -80,63 +79,49 @@ export function DoctorProfile({ doctor, availableDays }: DoctorProfileProps) {
 
   return (
     <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-600 via-emerald-600 to-green-500 p-8 shadow-2xl">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
-
-        <div className="relative flex flex-col md:flex-row items-center gap-8">
-          {/* Doctor Photo */}
+      <section className="overflow-hidden rounded-[2rem] border border-emerald-100/80 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur dark:border-emerald-900/40 dark:bg-slate-950/70">
+        <div className="grid gap-8 p-6 md:grid-cols-[auto_1fr_auto] md:items-center md:p-10">
           <div className="relative">
-            <div className="w-36 h-36 rounded-2xl overflow-hidden bg-white/20 backdrop-blur-sm shadow-xl border-4 border-white/30">
+            <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-[1.75rem] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
               {doctor.imageUrl ? (
                 <Image
                   src={doctor.imageUrl}
-                  alt={doctor.full_name ?? "Doctor's photo"}
+                  alt={doctor.full_name ?? "Photo du médecin"}
                   fill
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <User className="h-16 w-16 text-white" />
-                </div>
+                <User className="h-12 w-12" />
               )}
             </div>
-            <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/30">
-              <Stethoscope className="h-5 w-5 text-white" />
+            <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg">
+              <Stethoscope className="h-4 w-4" />
             </div>
           </div>
 
-          {/* Doctor Info */}
-          <div className="flex-1 text-center md:text-left">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Dr. {doctor.full_name}
-            </h1>
-            <Badge className="bg-white/20 border-white/30 text-white hover:bg-white/30 text-sm px-4 py-1 mb-4">
+          <div className="space-y-4">
+            <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
               {doctor.specialty}
             </Badge>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4">
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Medal className="h-4 w-4 text-yellow-300" />
-                <span className="text-white text-sm">
-                  {doctor.experience} ans d&apos;expérience
-                </span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <CalendarCheck className="h-4 w-4 text-white" />
-                <span className="text-white text-sm">
-                  {totalSlots || 0} créneaux disponibles
-                </span>
-              </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 md:text-4xl">
+                Dr. {doctor.full_name}
+              </h1>
+              <p className="max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
+                Consultez son parcours, vérifiez ses créneaux disponibles et
+                réservez votre rendez-vous dans un cadre simple et rassurant.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <InfoBadge icon={Medal} text={`${doctor.experience} ans d'expérience`} />
+              <InfoBadge icon={CalendarCheck} text={`${totalSlots || 0} créneaux disponibles`} />
             </div>
           </div>
 
-          {/* Book Button */}
           <Button
             onClick={toggleBooking}
             size="lg"
-            className="bg-white text-emerald-700 hover:bg-white/90 font-semibold px-8 py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
+            className="rounded-full bg-emerald-600 px-8 py-6 text-white hover:bg-emerald-700"
           >
             {showBooking ? (
               <>
@@ -144,129 +129,102 @@ export function DoctorProfile({ doctor, availableDays }: DoctorProfileProps) {
                 <ChevronUp className="ml-2 h-5 w-5" />
               </>
             ) : (
-              <>
-                Prendre Rendez-vous
-              </>
+              "Prendre rendez-vous"
             )}
           </Button>
         </div>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - About & Stats */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/30 border-2">
-              <CardContent className="p-4 text-center">
-                <div className="h-12 w-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-2">
-                  <Medal className="h-6 w-6 text-emerald-400" />
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  {doctor.experience}
-                </p>
-                <p className="text-xs text-slate-400 uppercase tracking-wide">
-                  Années d&apos;exp.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-teal-500/10 to-cyan-500/10 border-teal-500/30 border-2">
-              <CardContent className="p-4 text-center">
-                <div className="h-12 w-12 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-2">
-                  <Calendar className="h-6 w-6 text-teal-400" />
-                </div>
-                <p className="text-2xl font-bold text-white">
-                  {totalSlots || 0}
-                </p>
-                <p className="text-xs text-slate-400 uppercase tracking-wide">
-                  Créneaux
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Availability Alert */}
-          {totalSlots > 0 ? (
-            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30 border-2">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                    <Clock className="h-5 w-5 text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium text-sm">
-                      Disponible maintenant
-                    </p>
-                    <p className="text-slate-400 text-xs">
-                      {totalSlots} créneaux sur les 4 prochains jours
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Alert className="bg-amber-500/10 border-amber-500/30">
-              <AlertCircle className="h-4 w-4 text-amber-400" />
-              <AlertDescription className="text-amber-300">
-                Aucun créneau disponible pour les 4 prochains jours. Veuillez
-                réessayer plus tard.
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
-
-        {/* Right Column - Description */}
-        <div className="lg:col-span-2">
-          <Card className="border-0 bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 shadow-lg h-full">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">
-                    À propos de Dr. {doctor.full_name}
-                  </h3>
-                  <p className="text-sm text-slate-400">
-                    Parcours professionnel et expertise
-                  </p>
-                </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.4fr]">
+        <div className="space-y-6">
+          <Card className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+            <CardContent className="space-y-4 p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <MetricCard
+                  icon={Medal}
+                  value={String(doctor.experience)}
+                  label="Années d'expérience"
+                />
+                <MetricCard
+                  icon={Calendar}
+                  value={String(totalSlots || 0)}
+                  label="Créneaux disponibles"
+                />
               </div>
 
-              <div className="prose prose-invert max-w-none">
-                <p className="text-slate-300 leading-relaxed whitespace-pre-line">
-                  {doctor.description ||
-                    "Ce médecin n'a pas encore ajouté de description. Vous pouvez toujours prendre rendez-vous pour une consultation."}
-                </p>
-              </div>
+              {totalSlots > 0 ? (
+                <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/80 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 dark:bg-slate-900 dark:text-emerald-300">
+                      <Clock3 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-slate-50">
+                        Des créneaux sont disponibles
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        Ce praticien propose actuellement des rendez-vous sur
+                        les prochains jours.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Alert className="rounded-[1.5rem] border-amber-200 bg-amber-50/80 dark:border-amber-900/40 dark:bg-amber-950/20">
+                  <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+                  <AlertDescription className="text-amber-800 dark:text-amber-200">
+                    Aucun créneau disponible pour les prochains jours. Vous
+                    pourrez réessayer ultérieurement.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
         </div>
-      </div>
 
-      {/* Booking Section */}
-      {showBooking && (
-        <div id="booking-section" className="animate-in slide-in-from-top-4">
-          <Card className="border-0 bg-gradient-to-br from-slate-800/80 to-slate-900/80 shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-600/20 to-teal-600/20 p-6 border-b border-emerald-500/20">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                  <CalendarCheck className="h-6 w-6 text-emerald-400" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    Réserver un Rendez-vous
-                  </h2>
-                  <p className="text-slate-400 text-sm">
-                    Sélectionnez un créneau et fournissez les détails de votre
-                    consultation
-                  </p>
-                </div>
+        <Card className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+          <CardContent className="p-6 md:p-8">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                <FileText className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                  À propos de Dr. {doctor.full_name}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Présentation du parcours et de l&apos;expertise
+                </p>
               </div>
             </div>
 
-            <CardContent className="p-6">
+            <p className="whitespace-pre-line text-base leading-7 text-slate-600 dark:text-slate-300">
+              {doctor.description ||
+                "Ce médecin n'a pas encore ajouté de description. Vous pouvez toujours prendre rendez-vous pour une consultation."}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {showBooking && (
+        <div id="booking-section">
+          <Card className="rounded-[2rem] border border-emerald-100/80 bg-white/90 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+            <CardContent className="p-6 md:p-8">
+              <div className="mb-6 flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  <CalendarCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                    Réserver un rendez-vous
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Choisissez un créneau puis confirmez les détails de votre
+                    consultation.
+                  </p>
+                </div>
+              </div>
+
               {totalSlots > 0 ? (
                 <>
                   {!selectedSlot && (
@@ -286,27 +244,57 @@ export function DoctorProfile({ doctor, availableDays }: DoctorProfileProps) {
                   )}
                 </>
               ) : (
-                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-8 text-center">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                  <div className="relative">
-                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10 mb-4">
-                      <Calendar className="h-8 w-8 text-amber-400" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      Aucun créneau disponible
-                    </h3>
-                    <p className="text-slate-400 max-w-md mx-auto">
-                      Ce médecin n&apos;a aucun créneau de rendez-vous disponible
-                      pour les 4 prochains jours. Veuillez réessayer plus tard
-                      ou essayer un autre médecin.
-                    </p>
+                <div className="rounded-[1.5rem] bg-slate-50 p-8 text-center dark:bg-slate-900/80">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
+                    <Calendar className="h-7 w-7" />
                   </div>
+                  <h3 className="mt-5 text-xl font-semibold text-slate-900 dark:text-slate-50">
+                    Aucun créneau disponible
+                  </h3>
+                  <p className="mx-auto mt-2 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
+                    Ce médecin n&apos;a aucun créneau de rendez-vous disponible
+                    pour les prochains jours. Veuillez réessayer plus tard ou
+                    consulter un autre praticien.
+                  </p>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
       )}
+    </div>
+  );
+}
+
+function InfoBadge({ icon: Icon, text }: { icon: any; text: string }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 dark:border-emerald-900/40 dark:bg-slate-900/80 dark:text-slate-200">
+      <Icon className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+      {text}
+    </div>
+  );
+}
+
+function MetricCard({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: any;
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className="rounded-[1.5rem] bg-slate-50 p-4 dark:bg-slate-900/80">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
+        <Icon className="h-4 w-4" />
+      </div>
+      <p className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+        {value}
+      </p>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { User, Star, Calendar, Medal, Stethoscope, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { User, Star, Calendar, Medal, Stethoscope, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,78 +21,76 @@ interface DoctorCardProps {
 
 export function DoctorCard({ doctor }: DoctorCardProps) {
   return (
-    <Card className="group relative overflow-hidden border-0 bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:from-slate-800 hover:to-slate-900 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:scale-[1.02]">
-      {/* Featured Badge */}
-      {doctor.isFeatured && (
-        <div className="absolute top-4 right-4 z-10">
-          <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg">
-            <Star className="h-3 w-3 mr-1 fill-current" />
-            Recommandé
-          </Badge>
-        </div>
-      )}
-
-      <CardContent className="p-6">
-        <div className="flex flex-col items-center text-center">
-          {/* Avatar */}
-          <div className="relative mb-4">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border-2 border-indigo-500/30 flex items-center justify-center overflow-hidden shadow-lg group-hover:border-indigo-500/50 transition-all duration-300">
+    <Card className="group h-full rounded-[1.75rem] border border-emerald-100/80 bg-white/90 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg dark:border-emerald-900/40 dark:bg-slate-950/70 dark:hover:border-emerald-800/60">
+      <CardContent className="flex h-full flex-col gap-5 p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.25rem] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
               {doctor.imageUrl ? (
-                <img
+                <Image
                   src={doctor.imageUrl}
                   alt={doctor.full_name || "Médecin"}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               ) : (
-                <User className="h-12 w-12 text-indigo-400" />
+                <User className="h-7 w-7" />
               )}
             </div>
-            <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
-              <Stethoscope className="h-4 w-4 text-white" />
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                Dr. {doctor.full_name}
+              </h3>
+              <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                {doctor.specialty}
+              </Badge>
             </div>
           </div>
 
-          {/* Name & Specialty */}
-          <h3 className="font-bold text-white text-xl mb-2 group-hover:text-indigo-300 transition-colors">
-            Dr. {doctor.full_name}
-          </h3>
-
-          <Badge
-            variant="outline"
-            className="bg-indigo-500/10 border-indigo-500/30 text-indigo-300 mb-3"
-          >
-            {doctor.specialty}
-          </Badge>
-
-          {/* Experience */}
-          <div className="flex items-center gap-2 text-slate-400 text-sm mb-4">
-            <Medal className="h-4 w-4 text-amber-400" />
-            <span>{doctor.experience || 0} ans d&apos;expérience</span>
-          </div>
-
-          {/* Description */}
-          <p className="text-slate-400 text-sm line-clamp-2 mb-6 leading-relaxed">
-            {doctor.description || "Médecin spécialiste vérifié et disponible pour des consultations."}
-          </p>
-
-          {/* Verified Badge */}
-          <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 text-xs font-medium px-3 py-1.5 rounded-full mb-4">
-            <Star className="h-3 w-3 fill-current" />
-            Médecin Vérifié
-          </div>
-
-          {/* Action Button */}
-          <Button
-            asChild
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-5 rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-indigo-500/25"
-          >
-            <Link href={`/list_doctors/${doctor.specialty}/${doctor.id}`}>
-              <Calendar className="h-4 w-4 mr-2" />
-              Voir le Profil
-              <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
+          {doctor.isFeatured && (
+            <Badge className="rounded-full bg-amber-500 px-3 py-1 text-white hover:bg-amber-500">
+              <Star className="mr-1 h-3.5 w-3.5 fill-current" />
+              Recommandé
+            </Badge>
+          )}
         </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900/80">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+              <Medal className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+              Expérience
+            </div>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+              {doctor.experience || 0} ans
+            </p>
+          </div>
+          <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900/80">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+              <Stethoscope className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+              Statut
+            </div>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+              Médecin vérifié
+            </p>
+          </div>
+        </div>
+
+        <p className="line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+          {doctor.description ||
+            "Médecin spécialiste vérifié et disponible pour des consultations."}
+        </p>
+
+        <Button
+          asChild
+          className="mt-auto w-full rounded-full bg-emerald-600 py-6 text-white hover:bg-emerald-700"
+        >
+          <Link href={`/list_doctors/${doctor.specialty}/${doctor.id}`}>
+            <Calendar className="mr-2 h-4 w-4" />
+            Voir le profil
+            <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-1" />
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );

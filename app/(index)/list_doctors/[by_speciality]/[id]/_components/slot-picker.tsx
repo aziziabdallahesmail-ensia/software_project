@@ -3,14 +3,12 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Clock,
-  ChevronRight,
+  Clock3,
+  ArrowRight,
   CalendarDays,
   CheckCircle2,
-  CalendarClock,
 } from "lucide-react";
 
 interface Slot {
@@ -36,10 +34,6 @@ export function SlotPicker({ days, onSelectSlot }: SlotPickerProps) {
     days.find((day) => day.slots.length > 0)?.date || days[0]?.date || ""
   );
 
-  const handleSlotSelect = (slot: Slot) => {
-    setSelectedSlot(slot);
-  };
-
   const confirmSelection = () => {
     if (selectedSlot) {
       onSelectSlot(selectedSlot);
@@ -50,169 +44,119 @@ export function SlotPicker({ days, onSelectSlot }: SlotPickerProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-500 p-6 shadow-xl">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-        <div className="relative flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-            <CalendarClock className="h-7 w-7 text-white" />
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+          <CalendarDays className="h-5 w-5" />
+        </div>
+        <div>
+          <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+            Choisir une date
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Commencez par sélectionner le jour souhaité.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex gap-3 overflow-x-auto pb-2">
+        {days.map((day) => {
+          const hasSlots = day.slots.length > 0;
+          const isSelected = selectedDay === day.date;
+
+          return (
+            <button
+              key={day.date}
+              onClick={() => hasSlots && setSelectedDay(day.date)}
+              disabled={!hasSlots}
+              className={`min-w-[108px] rounded-[1.5rem] border px-4 py-4 text-left transition ${
+                isSelected
+                  ? "border-emerald-300 bg-emerald-50 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/30"
+                  : hasSlots
+                    ? "border-emerald-100 bg-white hover:border-emerald-200 hover:bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-slate-900/70 dark:hover:border-emerald-800/60 dark:hover:bg-slate-900"
+                    : "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50 dark:border-slate-800 dark:bg-slate-900/50"
+              }`}
+            >
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                {format(new Date(day.date), "EEE", { locale: fr })}
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-50">
+                {format(new Date(day.date), "d")}
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {format(new Date(day.date), "MMM", { locale: fr })}
+              </p>
+              <p className="mt-3 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                {hasSlots ? `${day.slots.length} créneaux` : "Aucun créneau"}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <Clock3 className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">
-              Choisir un Créneau
-            </h2>
-            <p className="text-white/80 text-sm">
-              Sélectionnez une date et un horaire disponible
+            <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              Horaires disponibles
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {currentDayData
+                ? format(new Date(currentDayData.date), "EEEE d MMMM yyyy", {
+                    locale: fr,
+                  })
+                : "Choisissez une date"}
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Day Selector */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <CalendarDays className="h-5 w-5 text-teal-400" />
-          <h3 className="text-lg font-semibold text-white">
-            Sélectionnez une date
-          </h3>
-        </div>
-
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700">
-          {days.map((day) => {
-            const hasSlots = day.slots.length > 0;
-            const isSelected = selectedDay === day.date;
-
-            return (
-              <button
-                key={day.date}
-                onClick={() => hasSlots && setSelectedDay(day.date)}
-                disabled={!hasSlots}
-                className={`
-                  relative flex-shrink-0 flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-300 min-w-[100px]
-                  ${
-                    isSelected
-                      ? "bg-gradient-to-br from-teal-500/20 to-emerald-500/20 border-teal-500 shadow-lg shadow-teal-500/20"
-                      : hasSlots
-                        ? "bg-slate-800/50 border-slate-700 hover:border-teal-500/50 hover:bg-slate-800"
-                        : "bg-slate-900/30 border-slate-800 opacity-50 cursor-not-allowed"
-                  }
-                `}
-              >
-                <span
-                  className={`text-xs uppercase tracking-wide ${isSelected ? "text-teal-400" : "text-slate-500"}`}
-                >
-                  {format(new Date(day.date), "EEE", { locale: fr })}
-                </span>
-                <span
-                  className={`text-2xl font-bold mt-1 ${isSelected ? "text-white" : "text-slate-300"}`}
-                >
-                  {format(new Date(day.date), "d")}
-                </span>
-                <span
-                  className={`text-xs mt-1 ${isSelected ? "text-teal-300" : "text-slate-500"}`}
-                >
-                  {format(new Date(day.date), "MMM", { locale: fr })}
-                </span>
-                {hasSlots && (
-                  <span
-                    className={`
-                    mt-2 text-xs px-2 py-0.5 rounded-full font-medium
-                    ${isSelected ? "bg-teal-500/30 text-teal-300" : "bg-slate-700 text-slate-400"}
-                  `}
-                  >
-                    {day.slots.length} créneaux
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Time Slots */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-emerald-400" />
-          <h3 className="text-lg font-semibold text-white">
-            Horaires disponibles
-          </h3>
         </div>
 
         {currentDayData && currentDayData.slots.length > 0 ? (
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 p-6 shadow-lg">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            {currentDayData.slots.map((slot) => {
+              const isSelected = selectedSlot?.startTime === slot.startTime;
 
-            <p className="text-slate-400 text-sm mb-4">
-              {format(new Date(currentDayData.date), "EEEE d MMMM yyyy", {
-                locale: fr,
-              })}
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {currentDayData.slots.map((slot) => {
-                const isSelected = selectedSlot?.startTime === slot.startTime;
-
-                return (
-                  <Card
-                    key={slot.startTime}
-                    onClick={() => handleSlotSelect(slot)}
-                    className={`
-                      cursor-pointer transition-all duration-300 border-2
-                      ${
-                        isSelected
-                          ? "bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-emerald-500 shadow-lg shadow-emerald-500/20"
-                          : "bg-slate-800/50 border-slate-700 hover:border-emerald-500/50 hover:bg-slate-800"
-                      }
-                    `}
-                  >
-                    <CardContent className="p-4 flex items-center justify-center gap-2">
-                      {isSelected ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                      ) : (
-                        <Clock className="h-4 w-4 text-slate-500" />
-                      )}
-                      <span
-                        className={`font-medium ${isSelected ? "text-white" : "text-slate-300"}`}
-                      >
-                        {format(new Date(slot.startTime), "HH:mm")}
-                      </span>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+              return (
+                <button
+                  key={slot.startTime}
+                  onClick={() => setSelectedSlot(slot)}
+                  className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-4 text-sm font-medium transition ${
+                    isSelected
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+                      : "border-emerald-100 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-emerald-800/60"
+                  }`}
+                >
+                  {isSelected ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : (
+                    <Clock3 className="h-4 w-4" />
+                  )}
+                  {format(new Date(slot.startTime), "HH:mm")}
+                </button>
+              );
+            })}
           </div>
         ) : (
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/50 p-8 text-center">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-700/50 mb-4">
-              <CalendarClock className="h-8 w-8 text-slate-500" />
-            </div>
-            <p className="text-slate-400 font-medium">
+          <div className="rounded-[1.5rem] bg-slate-50 p-8 text-center dark:bg-slate-900/80">
+            <p className="font-medium text-slate-900 dark:text-slate-50">
               Aucun créneau disponible pour cette date.
             </p>
-            <p className="text-slate-500 text-sm mt-1">
-              Veuillez sélectionner une autre date.
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Veuillez sélectionner un autre jour.
             </p>
           </div>
         )}
       </div>
 
-      {/* Confirm Button */}
-      <div className="flex justify-end pt-2">
+      <div className="flex justify-end">
         <Button
           onClick={confirmSelection}
           disabled={!selectedSlot}
-          className={`
-            px-8 py-6 rounded-xl font-semibold transition-all duration-300
-            ${
-              selectedSlot
-                ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:scale-[1.02]"
-                : "bg-slate-700 text-slate-400 cursor-not-allowed"
-            }
-          `}
+          className="rounded-full bg-emerald-600 px-6 py-6 text-white hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-800"
         >
           Continuer
-          <ChevronRight className="ml-2 h-5 w-5" />
+          <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>

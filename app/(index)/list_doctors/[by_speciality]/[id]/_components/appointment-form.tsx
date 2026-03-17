@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   Loader2,
-  Clock,
+  Clock3,
   ArrowLeft,
   Calendar,
   FileText,
@@ -40,35 +40,27 @@ export function AppointmentForm({
 }: AppointmentFormProps) {
   const [description, setDescription] = useState("");
 
-  // Use the useFetch hook to handle loading, data, and error states
   const { loading, data, execute: submitBooking } = useFetch(bookAppointment);
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Create form data
     const formData = new FormData();
     formData.append("doctorId", doctorId);
     formData.append("startTime", slot.startTime);
     formData.append("endTime", slot.endTime);
     formData.append("description", description);
 
-    // Submit booking using the function from useFetch
     await submitBooking(formData);
   };
 
-  // Handle response after booking attempt
   useEffect(() => {
-    if (data) {
-      if (data.success) {
-        toast.success("Rendez-vous réservé avec succès !");
-        onComplete();
-      }
+    if (data?.success) {
+      toast.success("Rendez-vous réservé avec succès !");
+      onComplete();
     }
   }, [data, onComplete]);
 
-  // Format time for display
   const formatTime = (dateStr: string) => {
     try {
       return format(new Date(dateStr), "HH:mm");
@@ -78,138 +70,97 @@ export function AppointmentForm({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-600 via-emerald-600 to-green-500 p-6 shadow-xl">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-        <div className="relative flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-            <Stethoscope className="h-7 w-7 text-white" />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/80 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
+            <Calendar className="h-4 w-4" />
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-white">
-              Confirmer le Rendez-vous
-            </h2>
-            <p className="text-white/80 text-sm">
-              Vérifiez les détails et confirmez votre réservation
-            </p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            Date
+          </p>
+          <p className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-50">
+            {format(new Date(slot.startTime), "EEEE d MMMM yyyy", {
+              locale: fr,
+            })}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/80 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
+            <Clock3 className="h-4 w-4" />
           </div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            Horaire
+          </p>
+          <p className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-50">
+            {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+          </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Appointment Details Card */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-2 border-emerald-500/30 p-6 shadow-lg">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-emerald-400" />
-            Détails du Rendez-vous
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Date */}
-            <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-xl p-4 border border-emerald-500/20">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
-                    Date
-                  </p>
-                  <p className="text-white font-semibold">
-                    {format(new Date(slot.startTime), "EEEE d MMMM yyyy", {
-                      locale: fr,
-                    })}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Time */}
-            <div className="bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-xl p-4 border border-teal-500/20">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-teal-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
-                    Horaire
-                  </p>
-                  <p className="text-white font-semibold">
-                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                  </p>
-                </div>
-              </div>
-            </div>
+      <div className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 p-6 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <FileText className="h-4 w-4" />
           </div>
-        </div>
-
-        {/* Description Section */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 p-6 shadow-lg">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <FileText className="h-4 w-4 text-purple-400" />
-              </div>
-              <Label
-                htmlFor="description"
-                className="text-white font-semibold"
-              >
-                Décrivez votre préoccupation médicale
-              </Label>
-              <span className="text-xs text-slate-500 ml-auto">(optionnel)</span>
-            </div>
-
-            <Textarea
-              id="description"
-              placeholder="Veuillez fournir des détails sur votre préoccupation médicale ou ce que vous aimeriez discuter lors du rendez-vous..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 h-32 rounded-xl focus:border-emerald-500 focus:ring-emerald-500/20 resize-none"
-            />
-
-            <p className="text-sm text-slate-400 flex items-start gap-2">
-              <span className="text-emerald-400 mt-0.5">💡</span>
-              Ces informations seront partagées avec le médecin avant votre
-              rendez-vous.
+          <div>
+            <Label htmlFor="description" className="text-base font-semibold text-slate-900 dark:text-slate-50">
+              Décrivez votre besoin médical
+            </Label>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Optionnel, mais utile pour préparer la consultation.
             </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            disabled={loading}
-            className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:text-white py-6 rounded-xl"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Changer de créneau
-          </Button>
+        <Textarea
+          id="description"
+          placeholder="Expliquez brièvement le motif de votre consultation, vos symptômes ou la question que vous souhaitez aborder."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="min-h-32 rounded-[1.25rem] border-emerald-100 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 dark:border-emerald-900/40 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
+        />
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02]"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Réservation en cours...
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="mr-2 h-5 w-5" />
-                Confirmer la Réservation
-              </>
-            )}
-          </Button>
+        <div className="mt-4 flex items-start gap-3 rounded-[1.25rem] bg-slate-50 p-4 dark:bg-slate-900/80">
+          <Stethoscope className="mt-0.5 h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Ces informations seront partagées avec le médecin avant votre
+            rendez-vous afin de faciliter la prise en charge.
+          </p>
         </div>
-      </form>
-    </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          disabled={loading}
+          className="flex-1 rounded-full border-emerald-200 bg-white py-6 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Changer de créneau
+        </Button>
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="flex-1 rounded-full bg-emerald-600 py-6 text-white hover:bg-emerald-700"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Réservation en cours...
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="mr-2 h-5 w-5" />
+              Confirmer la réservation
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }
