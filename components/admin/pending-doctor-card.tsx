@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Clock3, FileText, MoreVertical, UserRound } from "lucide-react";
 
 interface PendingDoctorCardProps {
   doctor: {
@@ -24,89 +25,71 @@ interface PendingDoctorCardProps {
   isPending?: boolean;
 }
 
-export function PendingDoctorCard({ doctor, onApprove, onReject, isPending }: PendingDoctorCardProps) {
+export function PendingDoctorCard({
+  doctor,
+  onApprove,
+  onReject,
+  isPending,
+}: PendingDoctorCardProps) {
   return (
-    <div className="bg-card rounded-xl border-2 border-orange-200 dark:border-orange-900/40 p-6 hover:shadow-lg transition-all group">
+    <div className="rounded-[1.75rem] border border-amber-200/80 bg-white/90 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-amber-900/40 dark:bg-slate-950/70">
       <div className="flex items-start gap-4">
-        {/* Avatar with pending indicator */}
-        <div className="relative w-16 h-16 flex-shrink-0">
-          <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
-            <span className="material-icons-round text-orange-600 dark:text-orange-400 text-2xl">
-              person
-            </span>
-          </div>
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-            <span className="material-icons-round text-white text-sm">
-              schedule
-            </span>
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+          <UserRound className="h-7 w-7" />
+          <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white">
+            <Clock3 className="h-3 w-3" />
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div>
-              <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
+        <div className="min-w-0 flex-1">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                 Dr. {doctor.full_name}
               </h3>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary">
+              <div className="flex flex-wrap gap-2">
+                <Badge className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700 hover:bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
                   {doctor.specialty}
                 </Badge>
-                <Badge variant="outline" className="bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700">
+                <Badge className="rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-700 hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                   En attente
                 </Badge>
               </div>
             </div>
+
             {doctor.experience && (
-              <div className="text-right flex-shrink-0">
-                <p className="text-sm font-medium text-foreground">
+              <div className="rounded-2xl bg-slate-50 px-4 py-3 text-right dark:bg-slate-900/80">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  Expérience
+                </p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
                   {doctor.experience} ans
                 </p>
-                <p className="text-xs text-muted-foreground">d&apos;expérience</p>
               </div>
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+          <p className="line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
             {doctor.description}
           </p>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <span className="material-icons-round text-base mr-1">
-                description
-              </span>
+          <div className="mt-5 flex items-center gap-2">
+            <Button variant="outline" size="sm" className="rounded-full">
+              <FileText className="mr-1 h-4 w-4" />
               Voir documents
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" disabled={isPending}>
-                  <span className="material-icons-round text-base">
-                    more_vert
-                  </span>
+                <Button variant="ghost" size="sm" disabled={isPending} className="rounded-full">
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem 
-                  className="text-green-600 focus:text-green-600 focus:bg-green-50 dark:focus:bg-green-950"
-                  onClick={() => onApprove?.(doctor.id)}
-                  disabled={isPending}
-                >
-                  <span className="material-icons-round text-base mr-2">
-                    check_circle
-                  </span>
+              <DropdownMenuContent align="end" className="w-48 rounded-2xl">
+                <DropdownMenuItem onClick={() => onApprove?.(doctor.id)} disabled={isPending}>
                   Approuver
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
-                  onClick={() => onReject?.(doctor.id)}
-                  disabled={isPending}
-                >
-                  <span className="material-icons-round text-base mr-2">
-                    cancel
-                  </span>
+                <DropdownMenuItem onClick={() => onReject?.(doctor.id)} disabled={isPending}>
                   Rejeter
                 </DropdownMenuItem>
               </DropdownMenuContent>
