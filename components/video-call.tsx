@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
@@ -11,7 +12,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Loader2 } from "lucide-react"
 import { initializeVideoCall, leaveVideoCall } from "@/actions/video-call"
 import toast from "react-hot-toast"
@@ -91,13 +91,13 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
         twilioRoom.on("participantDisconnected", handleParticipantDisconnected)
 
         setIsConnecting(false)
-        toast.success("Connected to video call")
+        toast.success("Connexion à l'appel vidéo établie")
       } catch (error: any) {
         console.error("Error connecting to room:", error)
         if (mounted) {
-          setConnectionError(error.message || "Failed to connect to video call")
+          setConnectionError(error.message || "Impossible de se connecter à l'appel vidéo")
           setIsConnecting(false)
-          toast.error(error.message || "Failed to connect")
+          toast.error(error.message || "Impossible de se connecter")
         }
       }
     }
@@ -110,6 +110,8 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
         twilioRoom.disconnect()
       }
     }
+  // Existing Twilio handlers rely on stable room callbacks during the call session.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointmentId])
 
   // Timer for call duration
@@ -141,7 +143,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
   // Handle remote participant disconnection
   function handleParticipantDisconnected(participant: any) {
     setRemoteParticipant(null)
-    toast(`${participant.identity} left the call`)
+    toast(`${participant.identity} a quitté l'appel`)
   }
 
   // Attach track to video/audio element
@@ -192,11 +194,11 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
       // Leave call without completing appointment
       await leaveVideoCall(appointmentId)
       
-      toast.success("You left the call. You can rejoin anytime during the appointment window.")
+      toast.success("Vous avez quitté l'appel. Vous pouvez le rejoindre à nouveau pendant le créneau du rendez-vous.")
       router.push(backLink)
     } catch (error: any) {
       console.error("Error leaving call:", error)
-      toast.error("Failed to leave call properly")
+      toast.error("Impossible de quitter l'appel correctement")
       router.push(backLink)
     }
   }
@@ -210,17 +212,17 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
 
   if (connectionError) {
     return (
-      <div className="min-h-screen bg-background/50 dark:bg-surface-900 p-6">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.08),_transparent_28%),linear-gradient(180deg,_rgba(251,252,249,1)_0%,_rgba(244,247,242,1)_100%)] p-6 dark:bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.14),_transparent_24%),linear-gradient(180deg,_rgba(11,15,14,1)_0%,_rgba(8,11,10,1)_100%)]">
         <div className="container mx-auto">
-          <PageTitle title="Video Call" backLink={backLink} />
-          <Card className="max-w-md mx-auto mt-8">
+          <PageTitle title="Appel vidéo" backLink={backLink} backLabel="Retour" />
+          <Card className="max-w-md mx-auto mt-8 rounded-[1.75rem] border border-emerald-100/80 bg-white/90 dark:border-emerald-900/40 dark:bg-slate-950/70">
             <CardHeader>
-              <CardTitle>Connection Error</CardTitle>
+              <CardTitle>Erreur de connexion</CardTitle>
               <CardDescription>{connectionError}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => router.push(backLink)} className="w-full">
-                Go Back
+              <Button onClick={() => router.push(backLink)} className="w-full rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
+                Revenir
               </Button>
             </CardContent>
           </Card>
@@ -231,13 +233,13 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
 
   if (isConnecting) {
     return (
-      <div className="min-h-screen bg-background/50 dark:bg-surface-900 p-6">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.08),_transparent_28%),linear-gradient(180deg,_rgba(251,252,249,1)_0%,_rgba(244,247,242,1)_100%)] p-6 dark:bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.14),_transparent_24%),linear-gradient(180deg,_rgba(11,15,14,1)_0%,_rgba(8,11,10,1)_100%)]">
         <div className="container mx-auto">
-          <PageTitle title="Video Call" backLink={backLink} />
-          <Card className="max-w-md mx-auto mt-8">
+          <PageTitle title="Appel vidéo" backLink={backLink} backLabel="Retour" />
+          <Card className="max-w-md mx-auto mt-8 rounded-[1.75rem] border border-emerald-100/80 bg-white/90 dark:border-emerald-900/40 dark:bg-slate-950/70">
             <CardHeader>
-              <CardTitle>Connecting...</CardTitle>
-              <CardDescription>Please wait while we connect you to the call</CardDescription>
+              <CardTitle>Connexion en cours...</CardTitle>
+              <CardDescription>Veuillez patienter pendant la connexion à l&apos;appel.</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
@@ -248,16 +250,16 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
     )
   }
 
-  const doctorName = appointmentData?.doctor?.full_name || "Doctor"
+  const doctorName = appointmentData?.doctor?.full_name || "Docteur"
   const patientName = appointmentData?.patient?.full_name || "Patient"
 
   return (
-    <div className="min-h-screen bg-background/50 dark:bg-surface-900 p-6">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.08),_transparent_28%),linear-gradient(180deg,_rgba(251,252,249,1)_0%,_rgba(244,247,242,1)_100%)] p-6 dark:bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.14),_transparent_24%),linear-gradient(180deg,_rgba(11,15,14,1)_0%,_rgba(8,11,10,1)_100%)]">
       <div className="container mx-auto">
-        <PageTitle title="Video Call" backLink={backLink} />
+        <PageTitle title="Appel vidéo" backLink={backLink} backLabel="Retour" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 relative overflow-hidden">
+          <Card className="lg:col-span-2 relative overflow-hidden rounded-[1.75rem] border border-emerald-100/80 bg-white/90 dark:border-emerald-900/40 dark:bg-slate-950/70">
             <CardHeader className="p-0">
               <CardTitle className="sr-only">Remote video</CardTitle>
             </CardHeader>
@@ -277,7 +279,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                   <div className="absolute inset-0 flex items-center justify-center text-white">
                     <div className="text-center">
                       <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                      <p>Waiting for other participant...</p>
+                      <p>En attente de l&apos;autre participant...</p>
                     </div>
                   </div>
                 )}
@@ -294,7 +296,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                 />
                 {!cameraOn && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white text-sm">
-                    Camera Off
+                    Caméra désactivée
                   </div>
                 )}
               </div>
@@ -305,7 +307,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                   variant={micOn ? "ghost" : "destructive"} 
                   size="icon" 
                   onClick={toggleMic}
-                  title={micOn ? "Mute microphone" : "Unmute microphone"}
+                  title={micOn ? "Couper le micro" : "Réactiver le micro"}
                 >
                   {micOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
                 </Button>
@@ -314,7 +316,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                   variant={cameraOn ? "ghost" : "destructive"} 
                   size="icon" 
                   onClick={toggleCamera}
-                  title={cameraOn ? "Turn off camera" : "Turn on camera"}
+                  title={cameraOn ? "Couper la caméra" : "Réactiver la caméra"}
                 >
                   {cameraOn ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
                 </Button>
@@ -323,7 +325,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                   variant="destructive" 
                   size="icon" 
                   onClick={handleEndCall}
-                  title="End call"
+                  title="Quitter l'appel"
                 >
                   <PhoneOff className="h-4 w-4" />
                 </Button>
@@ -331,10 +333,10 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 dark:border-emerald-900/40 dark:bg-slate-950/70">
             <CardHeader>
               <CardTitle>Participants</CardTitle>
-              <CardDescription>Secure — {formatTime(seconds)}</CardDescription>
+              <CardDescription>Connexion sécurisée • {formatTime(seconds)}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Doctor */}
@@ -345,11 +347,11 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                 <div className="flex-1">
                   <div className="font-medium">{doctorName}</div>
                   <div className="text-sm text-muted-foreground">
-                    {appointmentData?.doctor?.specialty || "Doctor"}
+                    {appointmentData?.doctor?.specialty || "Docteur"}
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {remoteParticipant?.identity?.includes("doctor") || localParticipant?.identity?.includes("doctor") ? "In call" : "Waiting"}
+                  {remoteParticipant?.identity?.includes("doctor") || localParticipant?.identity?.includes("doctor") ? "En appel" : "En attente"}
                 </div>
               </div>
 
@@ -363,7 +365,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
                   <div className="text-sm text-muted-foreground">Patient</div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {remoteParticipant?.identity?.includes("patient") || localParticipant?.identity?.includes("patient") ? "In call" : "Waiting"}
+                  {remoteParticipant?.identity?.includes("patient") || localParticipant?.identity?.includes("patient") ? "En appel" : "En attente"}
                 </div>
               </div>
             </CardContent>

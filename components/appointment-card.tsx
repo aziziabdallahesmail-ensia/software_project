@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calendar,
-  Clock,
+  Clock3,
   User,
   Stethoscope,
   X,
@@ -49,11 +50,10 @@ export function AppointmentCard({
   refetchAppointments,
 }: AppointmentCardProps) {
   const [open, setOpen] = useState(false);
-  const [action, setAction] = useState<string | null>(null); // 'cancel' or 'notes'
+  const [action, setAction] = useState<string | null>(null);
   const [notes, setNotes] = useState(appointment.notes || "");
   const router = useRouter();
 
-  // UseFetch hooks for server actions
   const {
     loading: cancelLoading,
     execute: submitCancel,
@@ -70,25 +70,22 @@ export function AppointmentCard({
     data: completeData,
   } = useFetch(markAppointmentCompleted);
 
-  // Format date and time
   const formatDateTime = (dateString: string) => {
     try {
       return format(new Date(dateString), "MMMM d, yyyy 'at' h:mm a");
-    } catch (e) {
+    } catch {
       return "Invalid date";
     }
   };
 
-  // Format time only
   const formatTime = (dateString: string) => {
     try {
       return format(new Date(dateString), "h:mm a");
-    } catch (e) {
+    } catch {
       return "Invalid time";
     }
   };
 
-  // Check if appointment can be marked as completed
   const canMarkCompleted = () => {
     if (userRole !== "DOCTOR" || appointment.status.toLowerCase() !== "scheduled") {
       return false;
@@ -98,7 +95,6 @@ export function AppointmentCard({
     return now >= appointmentStartTime;
   };
 
-  // Handle cancel appointment
   const handleCancelAppointment = async () => {
     if (cancelLoading) return;
 
@@ -113,7 +109,6 @@ export function AppointmentCard({
     }
   };
 
-  // Handle mark as completed
   const handleMarkCompleted = async () => {
     if (completeLoading) return;
 
@@ -128,7 +123,6 @@ export function AppointmentCard({
     }
   };
 
-  // Handle save notes (doctor only)
   const handleSaveNotes = async () => {
     if (notesLoading || userRole !== "DOCTOR") return;
 
@@ -138,7 +132,6 @@ export function AppointmentCard({
     await submitNotes(formData);
   };
 
-  // Handle successful operations
   useEffect(() => {
     if (cancelData?.success) {
       toast.success("Rendez-vous annulé avec succès");
@@ -175,142 +168,96 @@ export function AppointmentCard({
     }
   }, [notesData, refetchAppointments, router]);
 
-  // Determine other party information based on user role
   const otherParty =
     userRole === "DOCTOR" ? appointment.patient : appointment.doctor;
 
   const otherPartyLabel = userRole === "DOCTOR" ? "Patient" : "Médecin";
   const otherPartyIcon = userRole === "DOCTOR" ? <User /> : <Stethoscope />;
 
-  // Status color scheme
-  const getStatusColors = () => {
-    const status = appointment.status.toLowerCase();
-    switch (status) {
-      case "completed":
-        return {
-          bg: "bg-gradient-to-br from-green-500/10 to-teal-500/10",
-          border: "border-green-500/30",
-          text: "text-green-400",
-          badge: "bg-green-500/20 text-green-300 border-green-500/40",
-        };
-      case "cancelled":
-        return {
-          bg: "bg-gradient-to-br from-red-500/10 to-rose-500/10",
-          border: "border-red-500/30",
-          text: "text-red-400",
-          badge: "bg-red-500/20 text-red-300 border-red-500/40",
-        };
-      default:
-        return {
-          bg: "bg-gradient-to-br from-blue-500/10 to-indigo-500/10",
-          border: "border-blue-500/30",
-          text: "text-blue-400",
-          badge: "bg-blue-500/20 text-blue-300 border-blue-500/40",
-        };
-    }
-  };
-
-  const statusColors = getStatusColors();
+  const statusColors = getStatusColors(appointment.status.toLowerCase());
 
   return (
     <>
-      <Card className={`${statusColors.bg} ${statusColors.border} border-2 hover:shadow-lg hover:scale-[1.01] transition-all duration-300`}>
-        <CardContent className="p-6">
-          {/* Status Badge - Top Right */}
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-3">
-              <div className={`${statusColors.bg} rounded-xl p-3 shadow-md`}>
+      <Card className={`rounded-[1.75rem] border ${statusColors.border} ${statusColors.background} shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg`}>
+        <CardContent className="space-y-5 p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex items-start gap-4">
+              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${statusColors.iconWrap} ${statusColors.icon}`}>
                 {otherPartyIcon}
               </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                   {otherPartyLabel}
                 </p>
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                   {userRole === "DOCTOR"
                     ? otherParty.full_name
                     : `Dr. ${otherParty.full_name}`}
                 </h3>
                 {userRole === "PATIENT" && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     {otherParty.specialty}
                   </p>
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <Badge
-                variant="outline"
-                className={`${statusColors.badge} font-semibold px-3 py-1`}
-              >
+
+            <div className="flex flex-wrap gap-2">
+              <Badge className={`rounded-full border px-3 py-1 ${statusColors.badge}`}>
                 {appointment.status}
               </Badge>
               {appointment.videoRoomName && (
-                <Badge
-                  variant="outline"
-                  className="bg-purple-500/20 text-purple-300 border-purple-500/40 font-semibold px-3 py-1"
-                >
-                  <Video className="h-3 w-3 mr-1" />
-                  Video
+                <Badge className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700 hover:bg-white dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-emerald-300">
+                  <Video className="mr-1 h-3.5 w-3.5" />
+                  Vidéo
                 </Badge>
               )}
             </div>
           </div>
 
-          {/* Divider */}
-          <div className={`h-px ${statusColors.border} mb-4`}></div>
-
-          {/* Date & Time Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            <div className="flex items-center gap-2 bg-background/40 rounded-lg p-3">
-              <Calendar className={`h-5 w-5 ${statusColors.text}`} />
-              <div>
-                <p className="text-xs text-muted-foreground">Date</p>
-                <p className="text-sm font-medium text-white">
-                  {format(new Date(appointment.startTime), "MMM d, yyyy")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 bg-background/40 rounded-lg p-3">
-              <Clock className={`h-5 w-5 ${statusColors.text}`} />
-              <div>
-                <p className="text-xs text-muted-foreground">Heure</p>
-                <p className="text-sm font-medium text-white">
-                  {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-                </p>
-              </div>
-            </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <InfoTile
+              icon={Calendar}
+              label="Date"
+              value={format(new Date(appointment.startTime), "MMM d, yyyy")}
+            />
+            <InfoTile
+              icon={Clock3}
+              label="Heure"
+              value={`${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`}
+            />
           </div>
 
-          {/* Video Call Duration - Show for completed appointments with video calls */}
           {appointment.status.toLowerCase() === "completed" && appointment.callDurationMinutes && (
-            <div className="mb-4 bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
-              <div className="flex items-center gap-2">
-                <Video className="h-5 w-5 text-purple-400" />
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Durée de la consultation vidéo</p>
-                  <p className="text-sm font-semibold text-purple-300">
-                    {appointment.callDurationMinutes} minutes
-                  </p>
+            <div className="rounded-[1.25rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    <Video className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-50">
+                      Consultation vidéo terminée
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {appointment.callDurationMinutes} minutes
+                    </p>
+                  </div>
                 </div>
-                <Badge variant="outline" className="bg-purple-500/20 text-purple-300 border-purple-500/40">
+                <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
                   Terminée
                 </Badge>
               </div>
             </div>
           )}
 
-          {/* Video Call Section - Prominent for scheduled appointments */}
           {appointment.status.toLowerCase() === "scheduled" && (
-            <div className="mb-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Video className="h-5 w-5 text-purple-400" />
-                <h4 className="text-sm font-semibold text-purple-300">Consultation vidéo</h4>
-                {appointment.videoRoomName && (
-                  <Badge variant="outline" className="bg-green-500/20 text-green-300 border-green-500/40 text-xs">
-                    Salle créée
-                  </Badge>
-                )}
+            <div className="rounded-[1.25rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
+              <div className="mb-3 flex items-center gap-2">
+                <Video className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                  Consultation vidéo
+                </h4>
               </div>
               <JoinCallButton
                 appointmentId={appointment.id}
@@ -322,105 +269,98 @@ export function AppointmentCard({
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
             {canMarkCompleted() && (
               <Button
                 size="sm"
                 onClick={handleMarkCompleted}
                 disabled={completeLoading}
-                className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium"
+                className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
               >
                 {completeLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <CheckCircle className="h-4 w-4 mr-1" />
+                    <CheckCircle className="mr-1 h-4 w-4" />
                     Marquer terminé
                   </>
                 )}
               </Button>
             )}
-            
-            {/* Cancel Button - Visible on card for scheduled appointments */}
+
             {appointment.status.toLowerCase() === "scheduled" && (
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleCancelAppointment}
                 disabled={cancelLoading}
-                className="border-red-500/30 text-red-400 hover:bg-red-500/10 font-medium"
+                className="rounded-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-950/30"
               >
                 {cancelLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <X className="h-4 w-4 mr-1" />
+                    <X className="mr-1 h-4 w-4" />
                     Annuler
                   </>
                 )}
               </Button>
             )}
-            
+
             <Button
               size="sm"
               variant="outline"
-              className={`${statusColors.border} ${statusColors.text} hover:bg-background/60 font-medium`}
+              className="rounded-full border-emerald-200 bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
               onClick={() => setOpen(true)}
             >
-              <FileText className="h-4 w-4 mr-1" />
+              <FileText className="mr-1 h-4 w-4" />
               Voir les détails
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Appointment Details Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-[1.75rem] border border-emerald-100/80 bg-white/95 dark:border-emerald-900/40 dark:bg-slate-950/95">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                <Calendar className={`h-6 w-6 ${statusColors.text}`} />
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                <Calendar className={`h-5 w-5 ${statusColors.icon}`} />
                 Détails du rendez-vous
               </DialogTitle>
-              <Badge
-                variant="outline"
-                className={`${statusColors.badge} font-semibold px-3 py-1`}
-              >
+              <Badge className={`rounded-full border px-3 py-1 ${statusColors.badge}`}>
                 {appointment.status}
               </Badge>
             </div>
-            <DialogDescription>
+            <DialogDescription className="text-slate-500 dark:text-slate-400">
               {appointment.status.toLowerCase() === "scheduled"
-                ? "Gérer votre rendez-vous à venir"
-                : "Voir les informations du rendez-vous"}
+                ? "Gérez votre rendez-vous à venir"
+                : "Consultez les informations du rendez-vous"}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-6">
-            {/* Other Party Information */}
-            <div className={`${statusColors.bg} rounded-xl p-4 ${statusColors.border} border`}>
+          <div className="space-y-6 py-4">
+            <div className="rounded-[1.5rem] border border-emerald-100 bg-slate-50 p-4 dark:border-emerald-900/40 dark:bg-slate-900/80">
               <div className="flex items-center gap-4">
-                <div className={`bg-background/60 rounded-full p-4 ${statusColors.text}`}>
+                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${statusColors.iconWrap} ${statusColors.icon}`}>
                   {otherPartyIcon}
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                     {otherPartyLabel}
                   </p>
-                  <p className="text-xl font-bold text-white">
+                  <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-50">
                     {userRole === "DOCTOR"
                       ? otherParty.full_name
                       : `Dr. ${otherParty.full_name}`}
                   </p>
                   {userRole === "DOCTOR" && (
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                       {otherParty.email}
                     </p>
                   )}
                   {userRole === "PATIENT" && (
-                    <p className={`text-sm ${statusColors.text} font-medium mt-1`}>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                       {otherParty.specialty}
                     </p>
                   )}
@@ -428,92 +368,62 @@ export function AppointmentCard({
               </div>
             </div>
 
-            {/* Appointment Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-background/40 rounded-lg p-4 border border-border">
-                <div className="flex items-center gap-3 mb-2">
-                  <Calendar className={`h-5 w-5 ${statusColors.text}`} />
-                  <h4 className="text-sm font-semibold text-white uppercase tracking-wide">
-                    Date
-                  </h4>
-                </div>
-                <p className="text-lg font-medium text-white">
-                  {formatDateTime(appointment.startTime)}
-                </p>
-              </div>
-              <div className="bg-background/40 rounded-lg p-4 border border-border">
-                <div className="flex items-center gap-3 mb-2">
-                  <Clock className={`h-5 w-5 ${statusColors.text}`} />
-                  <h4 className="text-sm font-semibold text-white uppercase tracking-wide">
-                    Durée
-                  </h4>
-                </div>
-                <p className="text-lg font-medium text-white">
-                  {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-                </p>
-              </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <InfoTile
+                icon={Calendar}
+                label="Date"
+                value={formatDateTime(appointment.startTime)}
+                large
+              />
+              <InfoTile
+                icon={Clock3}
+                label="Durée"
+                value={`${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`}
+                large
+              />
             </div>
 
-            {/* Video Call Information */}
             {appointment.videoRoomName && (
-              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/40 rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Video className="h-6 w-6 text-purple-400" />
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-purple-300 uppercase tracking-wide">
-                      Consultation vidéo
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {appointment.status.toLowerCase() === "completed" 
-                        ? "Consultation terminée"
-                        : "Salle de consultation vidéo créée"}
-                    </p>
+              <div className="rounded-[1.5rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                      <Video className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900 dark:text-slate-50">
+                        Consultation vidéo
+                      </p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {appointment.status.toLowerCase() === "completed"
+                          ? "Consultation terminée"
+                          : "Salle de consultation créée"}
+                      </p>
+                    </div>
                   </div>
-                  <Badge 
-                    variant="outline" 
-                    className={
-                      appointment.status.toLowerCase() === "completed"
-                        ? "bg-green-500/20 text-green-300 border-green-500/40"
-                        : "bg-purple-500/20 text-purple-300 border-purple-500/40"
-                    }
-                  >
-                    {appointment.status.toLowerCase() === "completed" ? "Terminée" : "Active"}
-                  </Badge>
+                  {appointment.callDurationMinutes && (
+                    <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                      {appointment.callDurationMinutes} min
+                    </Badge>
+                  )}
                 </div>
-                {appointment.callDurationMinutes && (
-                  <div className="bg-background/40 rounded-lg p-3 border border-purple-500/30">
-                    <p className="text-sm text-white">
-                      <span className="text-muted-foreground">Durée de l'appel:</span>{" "}
-                      <span className="font-semibold text-purple-300">{appointment.callDurationMinutes} minutes</span>
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* Patient Description */}
             {appointment.patientDescription && (
-              <div className="bg-background/40 rounded-lg p-4 border border-border">
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle className={`h-5 w-5 ${statusColors.text}`} />
-                  <h4 className="text-sm font-semibold text-white uppercase tracking-wide">
-                    {userRole === "DOCTOR"
-                      ? "Description du patient"
-                      : "Votre description"}
-                  </h4>
-                </div>
-                <p className="text-white leading-relaxed whitespace-pre-line">
-                  {appointment.patientDescription}
-                </p>
-              </div>
+              <DetailBlock
+                icon={AlertCircle}
+                title={userRole === "DOCTOR" ? "Description du patient" : "Votre description"}
+              >
+                {appointment.patientDescription}
+              </DetailBlock>
             )}
 
-            {/* Doctor Notes */}
-            <div className="bg-background/40 rounded-lg p-4 border border-border">
-              <div className="flex items-center justify-between mb-3">
+            <div className="rounded-[1.5rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <FileText className={`h-5 w-5 ${statusColors.text}`} />
-                  <h4 className="text-sm font-semibold text-white uppercase tracking-wide">
+                  <FileText className={`h-4 w-4 ${statusColors.icon}`} />
+                  <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-200">
                     Notes du médecin
                   </h4>
                 </div>
@@ -524,10 +434,10 @@ export function AppointmentCard({
                       variant="ghost"
                       size="sm"
                       onClick={() => setAction("notes")}
-                      className={`${statusColors.text} hover:bg-background/60 font-medium`}
+                      className="rounded-full"
                     >
-                      <Edit className="h-4 w-4 mr-1" />
-                      {appointment.notes ? "Modifier les notes" : "Ajouter des notes"}
+                      <Edit className="mr-1 h-4 w-4" />
+                      {appointment.notes ? "Modifier" : "Ajouter"}
                     </Button>
                   )}
               </div>
@@ -538,9 +448,9 @@ export function AppointmentCard({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Entrez vos notes cliniques ici..."
-                    className="bg-background border-border min-h-[120px] text-white"
+                    className="min-h-[120px] rounded-[1.25rem] border-emerald-100 bg-slate-50 dark:border-emerald-900/40 dark:bg-slate-900/80"
                   />
-                  <div className="flex justify-end space-x-2">
+                  <div className="flex justify-end gap-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -550,7 +460,7 @@ export function AppointmentCard({
                         setNotes(appointment.notes || "");
                       }}
                       disabled={notesLoading}
-                      className="border-border"
+                      className="rounded-full"
                     >
                       Annuler
                     </Button>
@@ -558,7 +468,7 @@ export function AppointmentCard({
                       size="sm"
                       onClick={handleSaveNotes}
                       disabled={notesLoading}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium"
+                      className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
                     >
                       {notesLoading ? (
                         <>
@@ -568,33 +478,30 @@ export function AppointmentCard({
                       ) : (
                         <>
                           <CheckCircle className="mr-2 h-4 w-4" />
-                          Enregistrer les notes
+                          Enregistrer
                         </>
                       )}
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="bg-background/60 rounded-lg p-4 border border-border/50 min-h-[100px]">
+                <div className="rounded-[1.25rem] bg-slate-50 p-4 dark:bg-slate-900/80">
                   {appointment.notes ? (
-                    <p className="text-white leading-relaxed whitespace-pre-line">
+                    <p className="whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
                       {appointment.notes}
                     </p>
                   ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-muted-foreground italic">
-                        Aucune note ajoutée pour le moment
-                      </p>
-                    </div>
+                    <p className="text-sm italic text-slate-500 dark:text-slate-400">
+                      Aucune note ajoutée pour le moment.
+                    </p>
                   )}
                 </div>
               )}
             </div>
           </div>
 
-          <DialogFooter className="flex flex-col sm:flex-row gap-3">
-            <div className="flex gap-2 flex-1">
-              {/* Join Video Call Button - Prominent in dialog */}
+          <DialogFooter className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-1 flex-wrap gap-2">
               {appointment.status.toLowerCase() === "scheduled" && (
                 <JoinCallButton
                   appointmentId={appointment.id}
@@ -604,13 +511,12 @@ export function AppointmentCard({
                   userRole={userRole.toLowerCase() as "doctor" | "patient"}
                 />
               )}
-              
-              {/* Mark as Complete Button - Only for doctors */}
+
               {canMarkCompleted() && (
                 <Button
                   onClick={handleMarkCompleted}
                   disabled={completeLoading}
-                  className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold"
+                  className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
                 >
                   {completeLoading ? (
                     <>
@@ -626,13 +532,12 @@ export function AppointmentCard({
                 </Button>
               )}
 
-              {/* Cancel Button - For scheduled appointments */}
               {appointment.status.toLowerCase() === "scheduled" && (
                 <Button
                   variant="outline"
                   onClick={handleCancelAppointment}
                   disabled={cancelLoading}
-                  className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10 font-medium"
+                  className="rounded-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-950/30"
                 >
                   {cancelLoading ? (
                     <>
@@ -641,7 +546,7 @@ export function AppointmentCard({
                     </>
                   ) : (
                     <>
-                      <X className="h-4 w-4 mr-2" />
+                      <X className="mr-2 h-4 w-4" />
                       Annuler le rendez-vous
                     </>
                   )}
@@ -651,7 +556,8 @@ export function AppointmentCard({
 
             <Button
               onClick={() => setOpen(false)}
-              className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium"
+              variant="outline"
+              className="rounded-full border-emerald-200 bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
             >
               Fermer
             </Button>
@@ -659,5 +565,85 @@ export function AppointmentCard({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function getStatusColors(status: string) {
+  switch (status) {
+    case "completed":
+      return {
+        background: "bg-emerald-50/70 dark:bg-emerald-950/20",
+        border: "border-emerald-100 dark:border-emerald-900/40",
+        icon: "text-emerald-700 dark:text-emerald-300",
+        iconWrap: "bg-white dark:bg-slate-900",
+        badge:
+          "border-emerald-200 bg-white text-emerald-700 hover:bg-white dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-emerald-300",
+      };
+    case "cancelled":
+      return {
+        background: "bg-red-50/70 dark:bg-red-950/20",
+        border: "border-red-100 dark:border-red-900/40",
+        icon: "text-red-700 dark:text-red-300",
+        iconWrap: "bg-white dark:bg-slate-900",
+        badge:
+          "border-red-200 bg-white text-red-700 hover:bg-white dark:border-red-900/50 dark:bg-slate-950/70 dark:text-red-300",
+      };
+    default:
+      return {
+        background: "bg-white/90 dark:bg-slate-950/70",
+        border: "border-emerald-100 dark:border-emerald-900/40",
+        icon: "text-emerald-700 dark:text-emerald-300",
+        iconWrap: "bg-emerald-50 dark:bg-emerald-950/40",
+        badge:
+          "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",
+      };
+  }
+}
+
+function InfoTile({
+  icon: Icon,
+  label,
+  value,
+  large = false,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  large?: boolean;
+}) {
+  return (
+    <div className="rounded-[1.25rem] bg-slate-50 p-4 dark:bg-slate-900/80">
+      <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+        <Icon className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+        {label}
+      </div>
+      <p className={`${large ? "text-base" : "text-sm"} font-semibold text-slate-900 dark:text-slate-50`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function DetailBlock({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: any;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[1.5rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
+      <div className="mb-3 flex items-center gap-2">
+        <Icon className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+        <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-200">
+          {title}
+        </h4>
+      </div>
+      <p className="whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
+        {children}
+      </p>
+    </div>
   );
 }
