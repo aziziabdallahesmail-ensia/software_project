@@ -1,13 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Clock,
+  Clock3,
   Plus,
   Loader2,
   AlertCircle,
@@ -41,14 +41,12 @@ interface FormData {
 export function SetAvailability({ slots }: SetAvailabilityProps) {
   const [showForm, setShowForm] = useState(false);
 
-  // Custom hook for server action
   const {
     loading,
     execute: submitSlots,
     data: responseData,
   } = useFetch(setAvailability);
 
-  // React Hook Form
   const {
     register,
     handleSubmit,
@@ -63,23 +61,19 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
   function createLocalDateFromTime(timeStr: string): Date {
     const [hours, minutes] = timeStr.split(":").map(Number);
     const now = new Date();
-    const date = new Date(
+    return new Date(
       now.getFullYear(),
       now.getMonth(),
       now.getDate(),
       hours,
       minutes
     );
-    return date;
   }
 
-  // Handle slot submission
   const onSubmit = async (formData: FormData) => {
     if (loading) return;
 
     const submitFormData = new FormData();
-
-    // Create date objects
     const startDate = createLocalDateFromTime(formData.startTime);
     const endDate = createLocalDateFromTime(formData.endTime);
 
@@ -88,7 +82,6 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
       return;
     }
 
-    // Add to form data
     submitFormData.append("startTime", startDate.toISOString());
     submitFormData.append("endTime", endDate.toISOString());
 
@@ -96,316 +89,226 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
   };
 
   useEffect(() => {
-    if (responseData && responseData?.success) {
+    if (responseData?.success) {
       setShowForm(false);
       toast.success("Créneaux de disponibilité mis à jour avec succès");
     }
   }, [responseData]);
 
-  // Format time string for display
   const formatTimeString = (dateString: Date | string): string => {
     try {
       return format(new Date(dateString), "HH:mm");
-    } catch (e) {
+    } catch {
       return "Heure invalide";
     }
   };
 
-  // Count available vs booked slots
   const availableSlots = slots.filter((s) => s.status === "available");
   const bookedSlots = slots.filter((s) => s.status === "booked");
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 shadow-xl">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-        <div className="relative flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-              <CalendarClock className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">
-                Mes Disponibilités
-              </h2>
-              <p className="text-white/80 text-sm">
-                Configurez vos créneaux de consultation
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-              <Clock className="h-4 w-4 text-white" />
-              <span className="text-white font-medium text-sm">
-                {slots.length} créneaux
-              </span>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <MetricCard
+          icon={CheckCircle2}
+          label="Disponibles"
+          value={availableSlots.length}
+        />
+        <MetricCard icon={CalendarClock} label="Réservés" value={bookedSlots.length} />
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30 border-2">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+      <div className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 p-6 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+        {!showForm ? (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                  Disponibles
-                </p>
-                <p className="text-2xl font-bold text-green-400">
-                  {availableSlots.length}
-                </p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                <CheckCircle2 className="h-5 w-5 text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30 border-2">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                  Réservés
-                </p>
-                <p className="text-2xl font-bold text-amber-400">
-                  {bookedSlots.length}
-                </p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-                <CalendarClock className="h-5 w-5 text-amber-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content */}
-      <Card className="border-0 bg-gradient-to-br from-slate-900/50 to-slate-800/50 backdrop-blur-sm shadow-lg overflow-hidden">
-        <CardContent className="p-6">
-          {!showForm ? (
-            <div className="space-y-6">
-              {/* Current Slots */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-green-400" />
+                <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                   Créneaux actuels
                 </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Les créneaux ouverts aux réservations patients.
+                </p>
+              </div>
+              <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                {slots.length} créneau{slots.length > 1 ? "x" : ""}
+              </Badge>
+            </div>
 
-                {slots.length === 0 ? (
-                  <div className="relative rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-700/50 p-8 text-center">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                    <div className="relative">
-                      <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10 mb-4">
-                        <CalendarClock className="h-8 w-8 text-blue-400" />
+            {slots.length === 0 ? (
+              <div className="rounded-[1.5rem] bg-slate-50 p-8 text-center dark:bg-slate-900/80">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
+                  <CalendarClock className="h-6 w-6" />
+                </div>
+                <p className="mt-4 font-semibold text-slate-900 dark:text-slate-50">
+                  Aucun créneau défini
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                  Ajoutez vos disponibilités pour permettre aux patients de
+                  réserver une consultation.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {slots.map((slot) => (
+                  <div
+                    key={slot.id}
+                    className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-emerald-100 bg-slate-50 p-4 dark:border-emerald-900/40 dark:bg-slate-900/80"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
+                        <Clock3 className="h-4 w-4" />
                       </div>
-                      <p className="text-slate-300 font-medium mb-2">
-                        Aucun créneau défini
-                      </p>
-                      <p className="text-slate-500 text-sm">
-                        Ajoutez vos disponibilités pour permettre aux patients
-                        de prendre rendez-vous.
-                      </p>
+                      <div>
+                        <p className="font-semibold text-slate-900 dark:text-slate-50">
+                          {formatTimeString(slot.startTime)} -{" "}
+                          {formatTimeString(slot.endTime)}
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          Durée: 1 heure
+                        </p>
+                      </div>
                     </div>
+                    <Badge className="rounded-full border border-emerald-200 bg-white px-4 py-1 text-slate-700 hover:bg-white dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200">
+                      {slot.status === "booked" ? "Réservé" : "Disponible"}
+                    </Badge>
                   </div>
-                ) : (
-                  <div className="grid gap-3">
-                    {slots.map((slot, index) => (
-                      <div
-                        key={slot.id}
-                        className={`
-                          relative flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-300
-                          ${
-                            slot.status === "booked"
-                              ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30"
-                              : "bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30"
-                          }
-                        `}
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div
-                            className={`
-                            h-12 w-12 rounded-xl flex items-center justify-center
-                            ${
-                              slot.status === "booked"
-                                ? "bg-amber-500/20"
-                                : "bg-green-500/20"
-                            }
-                          `}
-                          >
-                            <Clock
-                              className={`h-6 w-6 ${slot.status === "booked" ? "text-amber-400" : "text-green-400"}`}
-                            />
-                          </div>
-                          <div>
-                            <p className="text-white font-semibold text-lg">
-                              {formatTimeString(slot.startTime)} -{" "}
-                              {formatTimeString(slot.endTime)}
-                            </p>
-                            <p className="text-sm text-slate-400">
-                              Durée: 1 heure
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          className={`
-                            font-medium px-3 py-1
-                            ${
-                              slot.status === "booked"
-                                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                                : "bg-green-500/20 text-green-300 border-green-500/40"
-                            }
-                          `}
-                        >
-                          {slot.status === "booked" ? "Réservé" : "Disponible"}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
+                ))}
+              </div>
+            )}
+
+            <Button
+              onClick={() => setShowForm(true)}
+              className="w-full rounded-full bg-emerald-600 py-6 text-white hover:bg-emerald-700"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Ajouter un créneau de disponibilité
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                  Nouveau créneau
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Définissez l&apos;heure de début et de fin.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowForm(false)}
+                className="rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-3">
+                <Label htmlFor="startTime">Heure de début</Label>
+                <Input
+                  id="startTime"
+                  type="time"
+                  {...register("startTime", {
+                    required: "L'heure de début est requise",
+                  })}
+                  className="h-12 rounded-2xl border-emerald-100 bg-slate-50 dark:border-emerald-900/40 dark:bg-slate-900/80"
+                />
+                {errors.startTime && (
+                  <p className="flex items-center gap-1 text-sm font-medium text-red-500">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.startTime.message}
+                  </p>
                 )}
               </div>
 
-              {/* Add Button */}
+              <div className="space-y-3">
+                <Label htmlFor="endTime">Heure de fin</Label>
+                <Input
+                  id="endTime"
+                  type="time"
+                  {...register("endTime", {
+                    required: "L'heure de fin est requise",
+                  })}
+                  className="h-12 rounded-2xl border-emerald-100 bg-slate-50 dark:border-emerald-900/40 dark:bg-slate-900/80"
+                />
+                {errors.endTime && (
+                  <p className="flex items-center gap-1 text-sm font-medium text-red-500">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.endTime.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button
-                onClick={() => setShowForm(true)}
-                className="w-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                type="button"
+                variant="outline"
+                onClick={() => setShowForm(false)}
+                disabled={loading}
+                className="flex-1 rounded-full border-emerald-200 bg-white py-6 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                Ajouter un créneau de disponibilité
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-full bg-emerald-600 py-6 text-white hover:bg-emerald-700"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="mr-2 h-5 w-5" />
+                    Enregistrer le créneau
+                  </>
+                )}
               </Button>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-purple-400" />
-                  Nouveau créneau
-                </h3>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowForm(false)}
-                  className="text-slate-400 hover:text-white hover:bg-slate-700/50"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+          </form>
+        )}
+      </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="startTime"
-                    className="text-sm font-medium text-slate-300"
-                  >
-                    Heure de début
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="startTime"
-                      type="time"
-                      {...register("startTime", {
-                        required: "L'heure de début est requise",
-                      })}
-                      className="bg-slate-800/50 border-slate-700 text-white h-12 text-lg rounded-xl focus:border-purple-500 focus:ring-purple-500/20"
-                    />
-                  </div>
-                  {errors.startTime && (
-                    <p className="text-sm font-medium text-red-400 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.startTime.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="endTime"
-                    className="text-sm font-medium text-slate-300"
-                  >
-                    Heure de fin
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="endTime"
-                      type="time"
-                      {...register("endTime", {
-                        required: "L'heure de fin est requise",
-                      })}
-                      className="bg-slate-800/50 border-slate-700 text-white h-12 text-lg rounded-xl focus:border-purple-500 focus:ring-purple-500/20"
-                    />
-                  </div>
-                  {errors.endTime && (
-                    <p className="text-sm font-medium text-red-400 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.endTime.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowForm(false)}
-                  disabled={loading}
-                  className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:text-white py-6 rounded-xl"
-                >
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-6 rounded-xl"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Enregistrement...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="mr-2 h-5 w-5" />
-                      Enregistrer le créneau
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Info Card */}
-      <Card className="border-0 bg-gradient-to-br from-purple-500/5 to-fuchsia-500/5 border-purple-500/20 shadow-lg">
-        <CardContent className="p-5">
-          <div className="flex gap-4">
-            <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <AlertCircle className="h-5 w-5 text-purple-400" />
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-2">
-                Comment fonctionnent les disponibilités ?
-              </h4>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Définir vos créneaux de disponibilité permet aux patients de
-                réserver des consultations pendant ces horaires. Les mêmes
-                disponibilités s&apos;appliquent à tous les jours. Vous pouvez
-                modifier vos disponibilités à tout moment, mais les rendez-vous
-                déjà réservés ne seront pas affectés.
-              </p>
-            </div>
+      <div className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 p-5 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <AlertCircle className="h-4 w-4" />
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Les disponibilités définissent les créneaux visibles par les
+            patients. Les rendez-vous déjà réservés restent conservés.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-[1.5rem] border border-emerald-100/80 bg-white/85 p-5 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <Icon className="h-4 w-4" />
+      </div>
+      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+        {value}
+      </p>
     </div>
   );
 }
