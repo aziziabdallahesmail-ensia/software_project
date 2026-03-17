@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   User,
   FileText,
-  Activity
+  Activity,
+  Sparkles,
+  HeartPulse
 } from "lucide-react";
 
 export default async function HomePage() {
@@ -22,158 +24,157 @@ export default async function HomePage() {
   // If user is authenticated and has a role, show personalized dashboard
   if (user && user.role) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="container mx-auto px-4 py-8">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Bienvenue, {user.full_name || user.email?.split("@")[0] || "Utilisateur"} 
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              {user.role === "patient" && "Gérez vos rendez-vous et consultez des médecins"}
-              {user.role === "doctor" && "Gérez votre emploi du temps et vos consultations"}
-              {user.role === "admin" && "Supervisez la plateforme et les utilisateurs"}
-            </p>
+      <div className="relative min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans">
+        {/* Animated Background Blobs */}
+        <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-emerald-400/20 dark:bg-emerald-900/40 blur-[100px] mix-blend-multiply dark:mix-blend-screen opacity-70 pointer-events-none" />
+        <div className="absolute top-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-teal-400/20 dark:bg-teal-900/40 blur-[100px] mix-blend-multiply dark:mix-blend-screen opacity-50 pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[45vw] h-[45vw] rounded-full bg-blue-400/20 dark:bg-blue-900/40 blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-60 pointer-events-none" />
+
+        <div className="relative z-10 container mx-auto px-4 py-12 lg:py-20 max-w-7xl">
+          {/* Welcome Header */}
+          <div className="flex flex-col mb-16 gap-6 justify-center">
+            <div className="space-y-6 max-w-3xl">
+              <Badge className="bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-700/50 backdrop-blur-md px-4 py-1.5 text-sm shadow-sm">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Tableau de bord {user.role === "patient" ? "Patient" : user.role === "doctor" ? "Médecin" : "Administrateur"}
+              </Badge>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Bienvenue, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300">{user.full_name || user.email?.split("@")[0] || "Utilisateur"}</span>
+              </h1>
+              <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                {user.role === "patient" && "Gérez votre santé en toute sérénité. Trouvez des spécialistes et planifiez vos rendez-vous en quelques clics."}
+                {user.role === "doctor" && "Optimisez votre temps. Gérez vos consultations et vos patients avec une fluidité absolue."}
+                {user.role === "admin" && "Supervision complète. Pilotez la plateforme et administrez les utilisateurs sans effort."}
+              </p>
+            </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          {/* Stats Section for Patients */}
+          {user.role === "patient" && (
+            <div className="grid gap-6 md:grid-cols-3 mb-10">
+              <StatCard label="Rendez-vous à venir" value="--" icon={Calendar} trend="+1 prévu" />
+              <StatCard label="Consultations passées" value="--" icon={CheckCircle2} trend="Dossier à jour" />
+              <StatCard label="Médecins consultés" value="--" icon={Stethoscope} trend="Suivi" />
+            </div>
+          )}
+
+          {/* Quick Actions / Feature Grid */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-16">
             {user.role === "patient" && (
               <>
-                <QuickActionCard
+                <ModernCard
                   icon={Stethoscope}
                   title="Trouver un médecin"
-                  description="Recherchez et consultez des spécialistes"
+                  description="Explorez notre réseau de spécialistes et prenez rendez-vous facilement."
                   href="/list_doctors"
-                  color="from-emerald-500 to-teal-600"
+                  accentClass="from-emerald-500 to-teal-400"
                 />
-                <QuickActionCard
+                <ModernCard
                   icon={Calendar}
                   title="Mes rendez-vous"
-                  description="Consultez vos rendez-vous à venir"
+                  description="Consultez, modifiez ou annulez vos prochaines consultations."
                   href="/appointments"
-                  color="from-blue-500 to-indigo-600"
+                  accentClass="from-blue-500 to-indigo-400"
                 />
-                <QuickActionCard
-                  icon={FileText}
+                <ModernCard
+                  icon={HeartPulse}
                   title="Mon dossier médical"
-                  description="Accédez à votre historique de santé"
+                  description="Accédez rapidement à l'historique complet de votre santé."
                   href="/appointments"
-                  color="from-purple-500 to-pink-600"
+                  accentClass="from-purple-500 to-pink-400"
                 />
               </>
             )}
 
             {user.role === "doctor" && (
               <>
-                <QuickActionCard
+                <ModernCard
                   icon={Calendar}
                   title="Mon agenda"
-                  description="Gérez vos disponibilités"
+                  description="Configurez vos disponibilités et vos horaires de travail."
                   href="/doctor"
-                  color="from-emerald-500 to-teal-600"
+                  accentClass="from-emerald-500 to-teal-400"
                 />
-                <QuickActionCard
+                <ModernCard
                   icon={User}
                   title="Mes patients"
-                  description="Consultez les rendez-vous du jour"
+                  description="Gérez et consultez les dossiers de vos patients du jour."
                   href="/doctor"
-                  color="from-blue-500 to-indigo-600"
+                  accentClass="from-blue-500 to-indigo-400"
                 />
-                <QuickActionCard
+                <ModernCard
                   icon={Activity}
                   title="Statistiques"
-                  description="Suivez votre activité"
+                  description="Analysez votre activité médicale et l'affluence du cabinet."
                   href="/doctor"
-                  color="from-purple-500 to-pink-600"
+                  accentClass="from-purple-500 to-pink-400"
                 />
               </>
             )}
 
             {user.role === "admin" && (
               <>
-                <QuickActionCard
+                <ModernCard
                   icon={User}
                   title="Vérifications en attente"
-                  description="Validez les nouveaux médecins"
+                  description="Passez en revue et validez les nouveaux professionnels."
                   href="/admin/pending-verification"
-                  color="from-emerald-500 to-teal-600"
+                  accentClass="from-emerald-500 to-teal-400"
                 />
-                <QuickActionCard
+                <ModernCard
                   icon={Stethoscope}
-                  title="Tous les médecins"
-                  description="Gérez les professionnels de santé"
+                  title="Médecins inscrits"
+                  description="Consultez et gérez la base de données des praticiens."
                   href="/list_doctors"
-                  color="from-blue-500 to-indigo-600"
+                  accentClass="from-blue-500 to-indigo-400"
                 />
-                <QuickActionCard
+                <ModernCard
                   icon={Activity}
-                  title="Configuration"
-                  description="Paramètres de la plateforme"
+                  title="Configuration Système"
+                  description="Ajustez les paramètres globaux de la plateforme santé."
                   href="/admin/configuration"
-                  color="from-purple-500 to-pink-600"
+                  accentClass="from-purple-500 to-pink-400"
                 />
               </>
             )}
           </div>
 
-          {/* Stats Section for Patients */}
-          {user.role === "patient" && (
-            <div className="grid gap-4 md:grid-cols-3 mb-8">
-              <StatCard
-                label="Rendez-vous à venir"
-                value="--"
-                icon={Calendar}
-              />
-              <StatCard
-                label="Consultations passées"
-                value="--"
-                icon={CheckCircle2}
-              />
-              <StatCard
-                label="Médecins consultés"
-                value="--"
-                icon={Stethoscope}
-              />
-            </div>
-          )}
-
-          {/* Quick Access */}
-          <Card className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-emerald-200 dark:border-emerald-800">
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {user.role === "patient" && "Besoin d'une consultation ?"}
-                    {user.role === "doctor" && "Gérez vos disponibilités"}
-                    {user.role === "admin" && "Tableau de bord administrateur"}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    {user.role === "patient" && "Trouvez un spécialiste et prenez rendez-vous en quelques clics"}
-                    {user.role === "doctor" && "Configurez votre agenda et vos créneaux de consultation"}
-                    {user.role === "admin" && "Accédez à toutes les fonctionnalités d'administration"}
-                  </p>
-                </div>
-                <Link
-                  href={
-                    user.role === "patient" ? "/list_doctors" : 
-                    user.role === "doctor" ? "/doctor" : 
-                    "/admin"
-                  }
-                >
-                  <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700">
-                    {user.role === "patient" && "Trouver un médecin"}
-                    {user.role === "doctor" && "Mon espace"}
-                    {user.role === "admin" && "Administration"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+          {/* Quick Access CTA */}
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-900 dark:to-slate-950 p-1 border border-slate-700/50 shadow-2xl">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmZiZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] opacity-50" />
+            <div className="relative bg-slate-900/50 backdrop-blur-xl rounded-[1.4rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+              <div className="max-w-xl">
+                <h3 className="text-2xl md:text-3xl font-bold mb-3">
+                  {user.role === "patient" && "Prêt pour votre prochaine consultation ?"}
+                  {user.role === "doctor" && "Accédez à votre espace professionnel"}
+                  {user.role === "admin" && "Tableau de bord administration"}
+                </h3>
+                <p className="text-slate-400 text-base md:text-lg">
+                  {user.role === "patient" && "Découvrez les meilleurs praticiens et planifiez une rencontre en quelques étapes simples."}
+                  {user.role === "doctor" && "Gérez facilement vos créneaux et optimisez l'organisation de votre pratique."}
+                  {user.role === "admin" && "Supervisez l'intégralité du système depuis votre centre de contrôle dédié."}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <Link
+                href={
+                  user.role === "patient" ? "/list_doctors" : 
+                  user.role === "doctor" ? "/doctor" : 
+                  "/admin"
+                }
+                className="shrink-0 w-full md:w-auto"
+              >
+                <Button size="lg" className="w-full h-14 px-8 text-base bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)] transition-all hover:scale-105">
+                  {user.role === "patient" && "Trouver un spécialiste"}
+                  {user.role === "doctor" && "Ouvrir l'Espace"}
+                  {user.role === "admin" && "Administration Centrale"}
+                  <ArrowRight className="ml-3 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-4 mt-8">
+        <footer className="w-full relative z-10 flex items-center justify-center border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 backdrop-blur-md mx-auto text-center py-6 mt-12">
           <ThemeSwitcher />
         </footer>
       </div>
@@ -183,21 +184,22 @@ export default async function HomePage() {
   // If user is authenticated but has no role, redirect to role selection
   if (user && !user.role) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full">
-              <User className="h-8 w-8 text-white" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+        <Card className="max-w-md w-full border-slate-200 dark:border-slate-800 shadow-xl rounded-2xl overflow-hidden backdrop-blur-sm bg-white/70 dark:bg-slate-900/70">
+          <div className="h-2 w-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <CardHeader className="text-center pt-8">
+            <div className="mx-auto mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/30 rounded-full shadow-inner">
+              <User className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <CardTitle className="text-2xl">Complétez votre profil</CardTitle>
-            <CardDescription>
-              Choisissez votre type de compte pour accéder à toutes les fonctionnalités
+            <CardTitle className="text-2xl font-bold">Profil Incomplet</CardTitle>
+            <CardDescription className="text-base text-slate-500 dark:text-slate-400 mt-2">
+              Sélectionnez votre type de compte pour débuter.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-8">
             <Link href="/role_selection">
-              <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700">
-                Choisir mon profil
+              <Button className="w-full h-12 text-base bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-xl transition-all shadow-md">
+                Finaliser l'inscription
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -209,12 +211,12 @@ export default async function HomePage() {
 
   // If not authenticated, show landing page
   return (
-    <main className="min-h-screen flex flex-col items-center">
+    <main className="min-h-screen flex flex-col items-center bg-slate-50 dark:bg-slate-950">
       <div className="flex-1 w-full flex flex-col items-center">
         <div className="flex-1 flex flex-col max-w-7xl w-full p-5">
           <LandingPage />
         </div>
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-4">
+        <footer className="w-full flex items-center justify-center border-t border-slate-200 dark:border-slate-800 mx-auto text-center py-6 mt-10">
           <ThemeSwitcher />
         </footer>
       </div>
@@ -223,24 +225,30 @@ export default async function HomePage() {
 }
 
 // Helper Components
-interface QuickActionCardProps {
+interface ModernCardProps {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
   href: string;
-  color: string;
+  accentClass: string;
 }
 
-function QuickActionCard({ icon: Icon, title, description, href, color }: QuickActionCardProps) {
+function ModernCard({ icon: Icon, title, description, href, accentClass }: ModernCardProps) {
   return (
-    <Link href={href}>
-      <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
-        <CardContent className="pt-6">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-            <Icon className="h-6 w-6 text-white" />
+    <Link href={href} className="group block h-full">
+      <Card className="relative h-full overflow-hidden border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.02)] transition-all duration-300 hover:-translate-y-1 rounded-2xl group-hover:border-slate-300 dark:group-hover:border-slate-700">
+        <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br ${accentClass} transition-opacity duration-500`} />
+        
+        <CardContent className="p-8">
+          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${accentClass} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+            <Icon className="h-7 w-7 text-white" />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{title}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-800 group-hover:to-slate-600 dark:group-hover:from-slate-100 dark:group-hover:to-slate-400 transition-colors">
+            {title}
+          </h3>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm md:text-base">
+            {description}
+          </p>
         </CardContent>
       </Card>
     </Link>
@@ -251,18 +259,25 @@ interface StatCardProps {
   label: string;
   value: string;
   icon: React.ComponentType<{ className?: string }>;
+  trend: string;
 }
 
-function StatCard({ label, value, icon: Icon }: StatCardProps) {
+function StatCard({ label, value, icon: Icon, trend }: StatCardProps) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+    <Card className="border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md shadow-sm rounded-2xl relative overflow-hidden group hover:shadow-md transition-all">
+      <div className="absolute -right-4 -top-4 w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full opacity-50 transition-transform group-hover:scale-150 duration-500 mix-blend-multiply dark:mix-blend-screen" />
+      <CardContent className="p-6 relative">
+        <div className="flex items-start justify-between">
+          <div className="space-y-4">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+            <div className="flex items-baseline gap-3">
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-white">{value}</p>
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-1 rounded-full">{trend}</span>
+            </div>
           </div>
-          <Icon className="h-8 w-8 text-gray-400" />
+          <div className="p-3 bg-white dark:bg-slate-800 shadow-sm rounded-xl">
+            <Icon className="h-6 w-6 text-slate-600 dark:text-slate-300" />
+          </div>
         </div>
       </CardContent>
     </Card>
