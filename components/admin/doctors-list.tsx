@@ -35,10 +35,11 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isPending, startTransition] = useTransition();
 
-  const filteredDoctors = initialDoctors.filter((doctor) =>
-    searchQuery === "" ||
-    doctor.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doctor.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDoctors = initialDoctors.filter(
+    (doctor) =>
+      searchQuery === "" ||
+      doctor.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doctor.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredDoctors.length / ITEMS_PER_PAGE);
@@ -97,30 +98,30 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
 
   return (
     <section className="flex-1">
-      <div className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
-        <div className="border-b border-emerald-100/80 p-6 dark:border-emerald-900/40">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="card-clinical overflow-hidden">
+        <div className="border-b border-border/60 p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              <h2 className="text-xl font-semibold text-foreground">
                 Médecins vérifiés
               </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Consultez et administrez les praticiens déjà approuvés.
+              <p className="mt-1 text-sm text-muted-foreground">
+                Consultez et administrez les praticiens approuvés.
               </p>
             </div>
-            <div className="relative w-full lg:w-80">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <div className="relative w-full lg:w-72">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un médecin..."
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="h-11 rounded-full border-emerald-100 bg-slate-50 pl-9 dark:border-emerald-900/40 dark:bg-slate-900/80"
+                className="pl-10"
               />
             </div>
           </div>
         </div>
 
-        <div className="min-h-[500px]">
+        <div className="min-h-[400px] p-6">
           {filteredDoctors.length === 0 ? (
             <EmptyState
               icon={
@@ -144,11 +145,11 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
               description={
                 searchQuery
                   ? "Essayez un autre nom ou une autre spécialité."
-                  : "Les médecins vérifiés apparaîtront ici dès qu'ils seront approuvés."
+                  : "Les médecins vérifiés apparaîtront ici."
               }
             />
           ) : (
-            <div className="grid grid-cols-1 gap-4 p-6 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               {paginatedDoctors.map((doctor) => (
                 <DoctorCard
                   key={doctor.id}
@@ -172,37 +173,37 @@ export function DoctorsList({ initialDoctors }: DoctorsListProps) {
           )}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-emerald-100/80 p-4 text-sm text-slate-500 dark:border-emerald-900/40 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            Affichage de {filteredDoctors.length === 0 ? 0 : startIndex + 1}-
-            {Math.min(endIndex, filteredDoctors.length)} sur {filteredDoctors.length} résultats
-          </span>
-          <div className="flex items-center gap-2">
+        {filteredDoctors.length > 0 && (
+          <div className="flex flex-col gap-3 border-t border-border/60 px-6 py-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <span>
-              Page {currentPage} / {totalPages || 1}
+              Affichage de {filteredDoctors.length === 0 ? 0 : startIndex + 1}-
+              {Math.min(endIndex, filteredDoctors.length)} sur {filteredDoctors.length} résultats
             </span>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              <span className="sr-only">Page précédente</span>
-              &#8592;
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full"
-              disabled={currentPage === totalPages || totalPages === 0}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              <span className="sr-only">Page suivante</span>
-              &#8594;
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="iconSm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                <span className="sr-only">Page précédente</span>
+                &#8592;
+              </Button>
+              <span className="text-xs">
+                Page {currentPage} / {totalPages || 1}
+              </span>
+              <Button
+                variant="outline"
+                size="iconSm"
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                <span className="sr-only">Page suivante</span>
+                &#8594;
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

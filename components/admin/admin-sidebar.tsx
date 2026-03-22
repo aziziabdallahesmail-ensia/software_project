@@ -22,7 +22,7 @@ export function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
 
   const navItems: NavItem[] = [
     {
-      label: "Vérification en attente",
+      label: "En attente",
       href: "/admin/pending-verification",
       icon: <ShieldAlert className="h-4 w-4" />,
       badge: pendingCount > 0 ? pendingCount : undefined,
@@ -40,11 +40,11 @@ export function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
   ];
 
   return (
-    <aside className="w-full lg:w-80 flex-shrink-0">
-      <nav className="sticky top-8 rounded-[1.75rem] border border-emerald-100/80 bg-white/90 p-3 shadow-sm backdrop-blur dark:border-emerald-900/40 dark:bg-slate-950/70">
-        <div className="mb-3 px-3 pt-3">
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-            Navigation admin
+    <aside className="w-full lg:w-72 flex-shrink-0">
+      <nav className="card-clinical p-4">
+        <div className="mb-3 px-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Navigation
           </p>
         </div>
         <div className="space-y-1">
@@ -55,25 +55,25 @@ export function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-[1.25rem] px-4 py-3 text-sm font-medium transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-slate-50"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}
               >
                 <span
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-xl",
+                    "flex h-8 w-8 items-center justify-center rounded-lg",
                     isActive
-                      ? "bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300"
-                      : "bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground"
                   )}
                 >
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
                 {item.badge && (
-                  <Badge className="ml-auto rounded-full bg-red-500 text-white hover:bg-red-500">
+                  <Badge variant="destructive" className="ml-auto h-5 min-w-5 justify-center rounded-full px-1.5 text-xs">
                     {item.badge}
                   </Badge>
                 )}

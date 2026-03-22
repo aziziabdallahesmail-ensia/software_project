@@ -19,29 +19,28 @@ export function AdminHeader() {
   };
 
   return (
-    <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
-      <div className="rounded-[2rem] border border-emerald-100/80 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur dark:border-emerald-900/40 dark:bg-slate-950/70 md:p-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+    <header className="max-w-7xl mx-auto px-4 lg:px-6 pt-6 pb-4">
+      <div className="section-container">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-4">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60"
+              className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à l&apos;accueil
             </Link>
 
-            <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                <ShieldCheck className="h-7 w-7" />
+            <div className="flex items-center gap-4">
+              <div className="icon-container icon-container-lg">
+                <ShieldCheck className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 md:text-4xl">
+                <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-foreground">
                   Administration
                 </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-                  Gérez les médecins, les vérifications et les paramètres de la
-                  plateforme dans une interface sobre et rassurante.
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Gérez les médecins, les vérifications et les paramètres de la plateforme.
                 </p>
               </div>
             </div>
@@ -52,7 +51,7 @@ export function AdminHeader() {
               variant="outline"
               size="icon"
               onClick={toggleTheme}
-              className="rounded-full border-emerald-200 bg-white dark:border-emerald-900/50 dark:bg-slate-950/70"
+              className="rounded-lg"
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
