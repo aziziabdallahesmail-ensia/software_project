@@ -8,10 +8,12 @@ export default async function IndexLayout({
 }) {
   const user = await getCurrentUser();
 
+  const showHeader = user && user.role;
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header user={user} />
-      <main className="flex-1">{children}</main>
+      {showHeader && <Header user={user} />}
+      <main className="flex-1 flex flex-col">{children}</main>
     </div>
   );
 }
