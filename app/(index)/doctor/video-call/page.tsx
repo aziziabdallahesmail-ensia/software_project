@@ -1,36 +1,37 @@
-"use client"
+"use client";
 
-import VideoCall from "@/components/video-call"
-import { useSearchParams } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import VideoCall from "@/components/video-call";
+import { useSearchParams } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function VideoCallPage() {
-  const searchParams = useSearchParams()
-  const appointmentId = searchParams.get("appointmentId")
+  const searchParams = useSearchParams();
+  const appointmentId = searchParams.get("appointmentId");
 
   if (!appointmentId) {
     return (
-      <div className="min-h-screen bg-background/50 dark:bg-surface-900 p-6">
+      <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background p-6">
         <div className="container mx-auto">
           <Card className="max-w-md mx-auto mt-8">
             <CardHeader>
-              <CardTitle>Invalid Request</CardTitle>
+              <CardTitle>Demande invalide</CardTitle>
               <CardDescription>
-                No appointment ID provided. Please join from your appointments list.
+                Aucun identifiant de rendez-vous n&apos;a été fourni. Rejoignez
+                l&apos;appel depuis votre liste de rendez-vous.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Link href="/doctor">
-                <Button className="w-full">Go to Dashboard</Button>
+                <Button className="w-full">Retour au tableau de bord</Button>
               </Link>
             </CardContent>
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
-  return <VideoCall appointmentId={appointmentId} backLink="/doctor" />
+  return <VideoCall appointmentId={appointmentId} backLink="/doctor" />;
 }

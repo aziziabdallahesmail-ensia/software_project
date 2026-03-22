@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,6 +19,7 @@ import { setAvailability } from "@/actions/doctor";
 import useFetch from "@/hooks/use-fetch";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Slot {
   id: string;
@@ -107,8 +107,8 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
   const bookedSlots = slots.filter((s) => s.status === "booked");
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2">
         <MetricCard
           icon={CheckCircle2}
           label="Disponibles"
@@ -117,175 +117,174 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
         <MetricCard icon={CalendarClock} label="Réservés" value={bookedSlots.length} />
       </div>
 
-      <div className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 p-6 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
-        {!showForm ? (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  Créneaux actuels
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Les créneaux ouverts aux réservations patients.
-                </p>
-              </div>
-              <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-                {slots.length} créneau{slots.length > 1 ? "x" : ""}
-              </Badge>
-            </div>
-
-            {slots.length === 0 ? (
-              <div className="rounded-[1.5rem] bg-slate-50 p-8 text-center dark:bg-slate-900/80">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
-                  <CalendarClock className="h-6 w-6" />
+      <Card>
+        <CardContent className="p-5">
+          {!showForm ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    Créneaux actuels
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Les créneaux ouverts aux réservations patients.
+                  </p>
                 </div>
-                <p className="mt-4 font-semibold text-slate-900 dark:text-slate-50">
-                  Aucun créneau défini
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                  Ajoutez vos disponibilités pour permettre aux patients de
-                  réserver une consultation.
-                </p>
+                <Badge variant="secondary">
+                  {slots.length} créneau{slots.length > 1 ? "x" : ""}
+                </Badge>
               </div>
-            ) : (
-              <div className="grid gap-3">
-                {slots.map((slot) => (
-                  <div
-                    key={slot.id}
-                    className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-emerald-100 bg-slate-50 p-4 dark:border-emerald-900/40 dark:bg-slate-900/80"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
-                        <Clock3 className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-slate-50">
-                          {formatTimeString(slot.startTime)} -{" "}
-                          {formatTimeString(slot.endTime)}
-                        </p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                          Durée: 1 heure
-                        </p>
-                      </div>
-                    </div>
-                    <Badge className="rounded-full border border-emerald-200 bg-white px-4 py-1 text-slate-700 hover:bg-white dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200">
-                      {slot.status === "booked" ? "Réservé" : "Disponible"}
-                    </Badge>
+
+              {slots.length === 0 ? (
+                <div className="text-center py-6">
+                  <div className="icon-container icon-container-md mx-auto mb-3 bg-secondary text-muted-foreground">
+                    <CalendarClock className="h-5 w-5" />
                   </div>
-                ))}
-              </div>
-            )}
-
-            <Button
-              onClick={() => setShowForm(true)}
-              className="w-full rounded-full bg-emerald-600 py-6 text-white hover:bg-emerald-700"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Ajouter un créneau de disponibilité
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  Nouveau créneau
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Définissez l&apos;heure de début et de fin.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowForm(false)}
-                className="rounded-full"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="space-y-3">
-                <Label htmlFor="startTime">Heure de début</Label>
-                <Input
-                  id="startTime"
-                  type="time"
-                  {...register("startTime", {
-                    required: "L'heure de début est requise",
-                  })}
-                  className="h-12 rounded-2xl border-emerald-100 bg-slate-50 dark:border-emerald-900/40 dark:bg-slate-900/80"
-                />
-                {errors.startTime && (
-                  <p className="flex items-center gap-1 text-sm font-medium text-red-500">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.startTime.message}
+                  <p className="text-sm font-medium text-foreground">
+                    Aucun créneau défini
                   </p>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <Label htmlFor="endTime">Heure de fin</Label>
-                <Input
-                  id="endTime"
-                  type="time"
-                  {...register("endTime", {
-                    required: "L'heure de fin est requise",
-                  })}
-                  className="h-12 rounded-2xl border-emerald-100 bg-slate-50 dark:border-emerald-900/40 dark:bg-slate-900/80"
-                />
-                {errors.endTime && (
-                  <p className="flex items-center gap-1 text-sm font-medium text-red-500">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.endTime.message}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Ajoutez vos disponibilités pour permettre aux patients de
+                    réserver une consultation.
                   </p>
-                )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {slots.map((slot) => (
+                    <div
+                      key={slot.id}
+                      className="flex items-center justify-between gap-4 p-3 rounded-lg bg-secondary/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="icon-container icon-container-sm bg-card">
+                          <Clock3 className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {formatTimeString(slot.startTime)} -{" "}
+                            {formatTimeString(slot.endTime)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Durée: 1 heure
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={slot.status === "booked" ? "info" : "outline"}
+                      >
+                        {slot.status === "booked" ? "Réservé" : "Disponible"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <Button
+                onClick={() => setShowForm(true)}
+                className="w-full gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Ajouter un créneau
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    Nouveau créneau
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Définissez l'heure de début et de fin.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="iconSm"
+                  onClick={() => setShowForm(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowForm(false)}
-                disabled={loading}
-                className="flex-1 rounded-full border-emerald-200 bg-white py-6 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
-              >
-                Annuler
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="flex-1 rounded-full bg-emerald-600 py-6 text-white hover:bg-emerald-700"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Enregistrement...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="mr-2 h-5 w-5" />
-                    Enregistrer le créneau
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        )}
-      </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="startTime" className="text-xs">Heure de début</Label>
+                  <Input
+                    id="startTime"
+                    type="time"
+                    {...register("startTime", {
+                      required: "L'heure de début est requise",
+                    })}
+                  />
+                  {errors.startTime && (
+                    <p className="flex items-center gap-1 text-xs text-destructive">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.startTime.message}
+                    </p>
+                  )}
+                </div>
 
-      <div className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 p-5 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <AlertCircle className="h-4 w-4" />
-          </div>
-          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Les disponibilités définissent les créneaux visibles par les
-            patients. Les rendez-vous déjà réservés restent conservés.
-          </p>
+                <div className="space-y-2">
+                  <Label htmlFor="endTime" className="text-xs">Heure de fin</Label>
+                  <Input
+                    id="endTime"
+                    type="time"
+                    {...register("endTime", {
+                      required: "L'heure de fin est requise",
+                    })}
+                  />
+                  {errors.endTime && (
+                    <p className="flex items-center gap-1 text-xs text-destructive">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.endTime.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      Enregistrer
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-secondary/30">
+        <div className="icon-container icon-container-sm bg-card flex-shrink-0">
+          <AlertCircle className="h-4 w-4" />
         </div>
+        <p className="text-xs text-muted-foreground">
+          Les disponibilités définissent les créneaux visibles par les
+          patients. Les rendez-vous déjà réservés restent conservés.
+        </p>
       </div>
     </div>
   );
@@ -296,19 +295,17 @@ function MetricCard({
   label,
   value,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-emerald-100/80 bg-white/85 p-5 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+    <div className="metric-card">
+      <div className="icon-container icon-container-sm mb-2">
         <Icon className="h-4 w-4" />
       </div>
-      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-        {value}
-      </p>
+      <p className="text-xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
     </div>
   );
 }
