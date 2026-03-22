@@ -12,9 +12,9 @@ export default function PatientVideoCallPage() {
 
   if (!appointmentId) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.08),_transparent_28%),linear-gradient(180deg,_rgba(251,252,249,1)_0%,_rgba(244,247,242,1)_100%)] p-6 dark:bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.14),_transparent_24%),linear-gradient(180deg,_rgba(11,15,14,1)_0%,_rgba(8,11,10,1)_100%)]">
+      <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background p-6">
         <div className="container mx-auto">
-          <Card className="mx-auto mt-8 max-w-md rounded-[1.75rem] border border-emerald-100/80 bg-white/90 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
+          <Card className="max-w-md mx-auto mt-8">
             <CardHeader>
               <CardTitle>Demande invalide</CardTitle>
               <CardDescription>
@@ -24,9 +24,7 @@ export default function PatientVideoCallPage() {
             </CardHeader>
             <CardContent>
               <Link href="/appointments">
-                <Button className="w-full rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
-                  Retour aux rendez-vous
-                </Button>
+                <Button className="w-full">Retour aux rendez-vous</Button>
               </Link>
             </CardContent>
           </Card>
