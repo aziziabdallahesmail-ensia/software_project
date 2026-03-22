@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getPatientAppointments } from "@/actions/patient";
 import { getCurrentUser } from "@/actions/set_user_role";
 import { redirect } from "next/navigation";
@@ -7,6 +6,7 @@ import { Calendar, Clock3, Stethoscope, Ban, ArrowRight } from "lucide-react";
 import { AppointmentCard } from "@/components/appointment-card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function PatientAppointmentsPage() {
   const user = await getCurrentUser();
@@ -28,26 +28,26 @@ export default async function PatientAppointmentsPage() {
   );
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.08),_transparent_28%),linear-gradient(180deg,_rgba(251,252,249,1)_0%,_rgba(244,247,242,1)_100%)] pb-12 dark:bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.14),_transparent_24%),linear-gradient(180deg,_rgba(11,15,14,1)_0%,_rgba(8,11,10,1)_100%)]">
-      <div className="container mx-auto max-w-7xl px-4 py-8 md:py-10">
-        <section className="overflow-hidden rounded-[2rem] border border-emerald-100/80 bg-white/90 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur dark:border-emerald-900/40 dark:bg-slate-950/70">
-          <div className="grid gap-8 p-6 md:grid-cols-[1.3fr_0.9fr] md:p-10">
-            <div className="space-y-5">
-              <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+    <div className="min-h-[calc(100vh-var(--header-height))] bg-gradient-to-b from-primary/5 via-background to-background">
+      <div className="container mx-auto px-4 lg:px-6 py-8 max-w-7xl">
+        <div className="page-header mb-8">
+          <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
+            <div className="space-y-4">
+              <Badge variant="outline" className="bg-success/5 text-success border-success/20">
                 Espace patient
               </Badge>
-              <div className="space-y-3">
-                <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 md:text-5xl">
+              <div className="space-y-2">
+                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
                   Vos rendez-vous, présentés avec clarté.
                 </h1>
-                <p className="max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
+                <p className="text-muted-foreground max-w-xl">
                   Suivez vos consultations à venir, retrouvez l&apos;historique
                   de vos soins et accédez rapidement à vos rendez-vous vidéo.
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3 md:grid-cols-1">
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
               <StatCard
                 icon={Clock3}
                 label="À venir"
@@ -65,16 +65,16 @@ export default async function PatientAppointmentsPage() {
               />
             </div>
           </div>
-        </section>
+        </div>
 
         {appointments.length > 0 ? (
-          <div className="mt-8 space-y-8">
+          <div className="space-y-8">
             <AppointmentSection
               title="Consultations à venir"
               subtitle="Les rendez-vous actifs que vous pouvez encore gérer."
               count={scheduledAppointments.length}
             >
-              <div className="grid gap-5">
+              <div className="space-y-4">
                 {scheduledAppointments.map((appointment) => (
                   <AppointmentCard
                     key={appointment.id}
@@ -92,7 +92,7 @@ export default async function PatientAppointmentsPage() {
                 subtitle="Vos rendez-vous déjà réalisés."
                 count={completedAppointments.length}
               >
-                <div className="grid gap-5">
+                <div className="space-y-4">
                   {completedAppointments.map((appointment) => (
                     <AppointmentCard
                       key={appointment.id}
@@ -111,7 +111,7 @@ export default async function PatientAppointmentsPage() {
                 subtitle="Conservez une trace des consultations non maintenues."
                 count={cancelledAppointments.length}
               >
-                <div className="grid gap-5">
+                <div className="space-y-4">
                   {cancelledAppointments.map((appointment) => (
                     <AppointmentCard
                       key={appointment.id}
@@ -125,28 +125,25 @@ export default async function PatientAppointmentsPage() {
             )}
           </div>
         ) : (
-          <Card className="mt-8 overflow-hidden rounded-[2rem] border border-emerald-100/80 bg-white/90 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
-            <CardContent className="flex flex-col items-start gap-6 p-8 md:p-12">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                <Calendar className="h-7 w-7" />
+          <Card>
+            <CardContent className="py-10 px-6 text-center">
+              <div className="icon-container icon-container-lg mx-auto mb-4">
+                <Calendar className="h-6 w-6" />
               </div>
-              <div className="space-y-3">
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  Aucun rendez-vous enregistré
-                </h2>
-                <p className="max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-                  Vous n&apos;avez pas encore réservé de consultation. Explorez
-                  les spécialités médicales disponibles pour trouver le bon
-                  praticien et réserver un créneau adapté.
-                </p>
-              </div>
-              <Link
-                href="/list_doctors"
-                className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                Trouver un médecin
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              <h2 className="text-lg font-semibold text-foreground mb-2">
+                Aucun rendez-vous enregistré
+              </h2>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                Vous n&apos;avez pas encore réservé de consultation. Explorez
+                les spécialités médicales disponibles pour trouver le bon
+                praticien et réserver un créneau adapté.
+              </p>
+              <Button asChild>
+                <Link href="/list_doctors">
+                  Trouver un médecin
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -160,21 +157,17 @@ function StatCard({
   label,
   value,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-emerald-100/80 bg-emerald-50/70 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
-        <Icon className="h-5 w-5" />
+    <div className="metric-card">
+      <div className="icon-container icon-container-sm mb-2">
+        <Icon className="h-4 w-4" />
       </div>
-      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-        {label}
-      </p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-        {value}
-      </p>
+      <p className="text-2xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -193,17 +186,13 @@ function AppointmentSection({
   if (!count) return null;
 
   return (
-    <section className="space-y-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <section className="space-y-4">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-            {title}
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {subtitle}
-          </p>
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
-        <Badge className="w-fit rounded-full border border-emerald-200 bg-white px-4 py-1 text-slate-700 hover:bg-white dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200">
+        <Badge variant="secondary">
           {count} élément{count > 1 ? "s" : ""}
         </Badge>
       </div>
