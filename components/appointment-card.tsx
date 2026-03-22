@@ -1,22 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Calendar,
   Clock3,
   User,
   Stethoscope,
   X,
-  Edit,
   Loader2,
   CheckCircle,
   FileText,
-  AlertCircle,
   Video,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +35,18 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface AppointmentCardProps {
-  appointment: any;
+  appointment: {
+    id: string;
+    startTime: Date | string;
+    endTime: Date | string;
+    status: string;
+    notes?: string;
+    patientDescription?: string;
+    videoRoomName?: string;
+    callDurationMinutes?: number;
+    patient?: { full_name: string; email?: string; specialty?: string };
+    doctor?: { full_name: string; email?: string; specialty?: string };
+  };
   userRole: "DOCTOR" | "PATIENT";
   refetchAppointments?: () => void;
 }
@@ -50,7 +57,6 @@ export function AppointmentCard({
   refetchAppointments,
 }: AppointmentCardProps) {
   const [open, setOpen] = useState(false);
-  const [action, setAction] = useState<string | null>(null);
   const [notes, setNotes] = useState(appointment.notes || "");
   const router = useRouter();
 
@@ -70,19 +76,11 @@ export function AppointmentCard({
     data: completeData,
   } = useFetch(markAppointmentCompleted);
 
-  const formatDateTime = (dateString: string) => {
+  const formatTime = (dateString: Date | string) => {
     try {
-      return format(new Date(dateString), "MMMM d, yyyy 'at' h:mm a");
+      return format(new Date(dateString), "HH:mm");
     } catch {
-      return "Invalid date";
-    }
-  };
-
-  const formatTime = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "h:mm a");
-    } catch {
-      return "Invalid time";
+      return "";
     }
   };
 
@@ -97,12 +95,7 @@ export function AppointmentCard({
 
   const handleCancelAppointment = async () => {
     if (cancelLoading) return;
-
-    if (
-      window.confirm(
-        "Êtes-vous sûr de vouloir annuler ce rendez-vous ? Cette action ne peut pas être annulée."
-      )
-    ) {
+    if (window.confirm("Êtes-vous sûr de vouloir annuler ce rendez-vous ?")) {
       const formData = new FormData();
       formData.append("appointmentId", appointment.id);
       await submitCancel(formData);
@@ -111,36 +104,18 @@ export function AppointmentCard({
 
   const handleMarkCompleted = async () => {
     if (completeLoading) return;
-
-    if (
-      window.confirm(
-        "Êtes-vous sûr de vouloir marquer ce rendez-vous comme terminé ? Cette action ne peut pas être annulée."
-      )
-    ) {
+    if (window.confirm("Êtes-vous sûr de vouloir marquer ce rendez-vous comme terminé ?")) {
       const formData = new FormData();
       formData.append("appointmentId", appointment.id);
       await submitMarkCompleted(formData);
     }
   };
 
-  const handleSaveNotes = async () => {
-    if (notesLoading || userRole !== "DOCTOR") return;
-
-    const formData = new FormData();
-    formData.append("appointmentId", appointment.id);
-    formData.append("notes", notes);
-    await submitNotes(formData);
-  };
-
   useEffect(() => {
     if (cancelData?.success) {
       toast.success("Rendez-vous annulé avec succès");
       setOpen(false);
-      if (refetchAppointments) {
-        refetchAppointments();
-      } else {
-        router.refresh();
-      }
+      refetchAppointments ? refetchAppointments() : router.refresh();
     }
   }, [cancelData, refetchAppointments, router]);
 
@@ -148,78 +123,60 @@ export function AppointmentCard({
     if (completeData?.success) {
       toast.success("Rendez-vous marqué comme terminé");
       setOpen(false);
-      if (refetchAppointments) {
-        refetchAppointments();
-      } else {
-        router.refresh();
-      }
+      refetchAppointments ? refetchAppointments() : router.refresh();
     }
   }, [completeData, refetchAppointments, router]);
 
   useEffect(() => {
     if (notesData?.success) {
       toast.success("Notes enregistrées avec succès");
-      setAction(null);
-      if (refetchAppointments) {
-        refetchAppointments();
-      } else {
-        router.refresh();
-      }
+      refetchAppointments ? refetchAppointments() : router.refresh();
     }
   }, [notesData, refetchAppointments, router]);
 
-  const otherParty =
-    userRole === "DOCTOR" ? appointment.patient : appointment.doctor;
-
-  const otherPartyLabel = userRole === "DOCTOR" ? "Patient" : "Médecin";
-  const otherPartyIcon = userRole === "DOCTOR" ? <User /> : <Stethoscope />;
-
+  const otherParty = userRole === "DOCTOR" ? appointment.patient : appointment.doctor;
   const statusColors = getStatusColors(appointment.status.toLowerCase());
 
   return (
     <>
-      <Card className={`rounded-[1.75rem] border ${statusColors.border} ${statusColors.background} shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg`}>
-        <CardContent className="space-y-5 p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="flex items-start gap-4">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${statusColors.iconWrap} ${statusColors.icon}`}>
-                {otherPartyIcon}
+      <Card className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${statusColors.cardClass}`}>
+        <CardContent className="space-y-4 p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`icon-container icon-container-md ${statusColors.iconBg}`}>
+                {userRole === "DOCTOR" ? <User className="h-5 w-5" /> : <Stethoscope className="h-5 w-5" />}
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                  {otherPartyLabel}
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  {userRole === "DOCTOR" ? "Patient" : "Médecin"}
                 </p>
-                <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                  {userRole === "DOCTOR"
-                    ? otherParty.full_name
-                    : `Dr. ${otherParty.full_name}`}
+                <h3 className="text-base font-semibold text-foreground">
+                  {userRole === "DOCTOR" ? otherParty?.full_name : `Dr. ${otherParty?.full_name}`}
                 </h3>
                 {userRole === "PATIENT" && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    {otherParty.specialty}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{otherParty?.specialty}</p>
                 )}
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Badge className={`rounded-full border px-3 py-1 ${statusColors.badge}`}>
+              <Badge variant={statusColors.badgeVariant as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info"}>
                 {appointment.status}
               </Badge>
               {appointment.videoRoomName && (
-                <Badge className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700 hover:bg-white dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-emerald-300">
-                  <Video className="mr-1 h-3.5 w-3.5" />
+                <Badge variant="info" className="gap-1">
+                  <Video className="h-3 w-3" />
                   Vidéo
                 </Badge>
               )}
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <InfoTile
               icon={Calendar}
               label="Date"
-              value={format(new Date(appointment.startTime), "MMM d, yyyy")}
+              value={format(new Date(appointment.startTime), "d MMM yyyy")}
             />
             <InfoTile
               icon={Clock3}
@@ -229,35 +186,23 @@ export function AppointmentCard({
           </div>
 
           {appointment.status.toLowerCase() === "completed" && appointment.callDurationMinutes && (
-            <div className="rounded-[1.25rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                    <Video className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-50">
-                      Consultation vidéo terminée
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {appointment.callDurationMinutes} minutes
-                    </p>
-                  </div>
-                </div>
-                <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-                  Terminée
-                </Badge>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-success/5 border border-success/20">
+              <div className="icon-container icon-container-sm bg-card">
+                <Video className="h-4 w-4 text-success" />
               </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Consultation vidéo terminée</p>
+                <p className="text-xs text-muted-foreground">{appointment.callDurationMinutes} minutes</p>
+              </div>
+              <Badge variant="success">Terminée</Badge>
             </div>
           )}
 
           {appointment.status.toLowerCase() === "scheduled" && (
-            <div className="rounded-[1.25rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
-              <div className="mb-3 flex items-center gap-2">
-                <Video className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-                  Consultation vidéo
-                </h4>
+            <div className="p-3 rounded-lg bg-secondary/50">
+              <div className="flex items-center gap-2 mb-2">
+                <Video className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold text-foreground">Consultation vidéo</span>
               </div>
               <JoinCallButton
                 appointmentId={appointment.id}
@@ -275,16 +220,14 @@ export function AppointmentCard({
                 size="sm"
                 onClick={handleMarkCompleted}
                 disabled={completeLoading}
-                className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
+                className="gap-1.5"
               >
                 {completeLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <>
-                    <CheckCircle className="mr-1 h-4 w-4" />
-                    Marquer terminé
-                  </>
+                  <CheckCircle className="h-4 w-4" />
                 )}
+                Marquer terminé
               </Button>
             )}
 
@@ -294,214 +237,113 @@ export function AppointmentCard({
                 variant="outline"
                 onClick={handleCancelAppointment}
                 disabled={cancelLoading}
-                className="rounded-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-950/30"
+                className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
               >
                 {cancelLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <>
-                    <X className="mr-1 h-4 w-4" />
-                    Annuler
-                  </>
+                  <X className="h-4 w-4" />
                 )}
+                Annuler
               </Button>
             )}
 
             <Button
               size="sm"
-              variant="outline"
-              className="rounded-full border-emerald-200 bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
+              variant="ghost"
               onClick={() => setOpen(true)}
+              className="gap-1.5"
             >
-              <FileText className="mr-1 h-4 w-4" />
-              Voir les détails
+              <FileText className="h-4 w-4" />
+              Détails
             </Button>
           </div>
         </CardContent>
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-[1.75rem] border border-emerald-100/80 bg-white/95 dark:border-emerald-900/40 dark:bg-slate-950/95">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between gap-3">
-              <DialogTitle className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                <Calendar className={`h-5 w-5 ${statusColors.icon}`} />
+              <DialogTitle className="text-lg font-semibold">
                 Détails du rendez-vous
               </DialogTitle>
-              <Badge className={`rounded-full border px-3 py-1 ${statusColors.badge}`}>
+              <Badge variant={statusColors.badgeVariant as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info"}>
                 {appointment.status}
               </Badge>
             </div>
-            <DialogDescription className="text-slate-500 dark:text-slate-400">
+            <DialogDescription>
               {appointment.status.toLowerCase() === "scheduled"
                 ? "Gérez votre rendez-vous à venir"
                 : "Consultez les informations du rendez-vous"}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            <div className="rounded-[1.5rem] border border-emerald-100 bg-slate-50 p-4 dark:border-emerald-900/40 dark:bg-slate-900/80">
-              <div className="flex items-center gap-4">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${statusColors.iconWrap} ${statusColors.icon}`}>
-                  {otherPartyIcon}
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                    {otherPartyLabel}
-                  </p>
-                  <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-50">
-                    {userRole === "DOCTOR"
-                      ? otherParty.full_name
-                      : `Dr. ${otherParty.full_name}`}
-                  </p>
-                  {userRole === "DOCTOR" && (
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      {otherParty.email}
-                    </p>
-                  )}
-                  {userRole === "PATIENT" && (
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      {otherParty.specialty}
-                    </p>
-                  )}
-                </div>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-secondary/50">
+              <div className={`icon-container icon-container-md ${statusColors.iconBg}`}>
+                {userRole === "DOCTOR" ? <User className="h-5 w-5" /> : <Stethoscope className="h-5 w-5" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  {userRole === "DOCTOR" ? "Patient" : "Médecin"}
+                </p>
+                <p className="text-sm font-semibold text-foreground">
+                  {userRole === "DOCTOR" ? otherParty?.full_name : `Dr. ${otherParty?.full_name}`}
+                </p>
+                {userRole === "DOCTOR" && (
+                  <p className="text-xs text-muted-foreground">{otherParty?.email}</p>
+                )}
+                {userRole === "PATIENT" && (
+                  <p className="text-xs text-muted-foreground">{otherParty?.specialty}</p>
+                )}
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <InfoTile
                 icon={Calendar}
                 label="Date"
-                value={formatDateTime(appointment.startTime)}
-                large
+                value={format(new Date(appointment.startTime), "EEEE d MMMM yyyy")}
               />
               <InfoTile
                 icon={Clock3}
                 label="Durée"
                 value={`${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`}
-                large
               />
             </div>
 
-            {appointment.videoRoomName && (
-              <div className="rounded-[1.5rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                      <Video className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900 dark:text-slate-50">
-                        Consultation vidéo
-                      </p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        {appointment.status.toLowerCase() === "completed"
-                          ? "Consultation terminée"
-                          : "Salle de consultation créée"}
-                      </p>
-                    </div>
-                  </div>
-                  {appointment.callDurationMinutes && (
-                    <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-                      {appointment.callDurationMinutes} min
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-
             {appointment.patientDescription && (
-              <DetailBlock
-                icon={AlertCircle}
-                title={userRole === "DOCTOR" ? "Description du patient" : "Votre description"}
-              >
-                {appointment.patientDescription}
-              </DetailBlock>
+              <div className="p-4 rounded-lg bg-secondary/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    {userRole === "DOCTOR" ? "Description du patient" : "Votre description"}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">
+                  {appointment.patientDescription}
+                </p>
+              </div>
             )}
 
-            <div className="rounded-[1.5rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
-              <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="p-4 rounded-lg bg-secondary/50">
+              <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
-                  <FileText className={`h-4 w-4 ${statusColors.icon}`} />
-                  <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-200">
-                    Notes du médecin
-                  </h4>
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    Notes
+                  </span>
                 </div>
-                {userRole === "DOCTOR" &&
-                  action !== "notes" &&
-                  appointment.status.toLowerCase() !== "cancelled" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setAction("notes")}
-                      className="rounded-full"
-                    >
-                      <Edit className="mr-1 h-4 w-4" />
-                      {appointment.notes ? "Modifier" : "Ajouter"}
-                    </Button>
-                  )}
               </div>
-
-              {userRole === "DOCTOR" && action === "notes" ? (
-                <div className="space-y-3">
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Entrez vos notes cliniques ici..."
-                    className="min-h-[120px] rounded-[1.25rem] border-emerald-100 bg-slate-50 dark:border-emerald-900/40 dark:bg-slate-900/80"
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setAction(null);
-                        setNotes(appointment.notes || "");
-                      }}
-                      disabled={notesLoading}
-                      className="rounded-full"
-                    >
-                      Annuler
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveNotes}
-                      disabled={notesLoading}
-                      className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
-                    >
-                      {notesLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Enregistrement...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Enregistrer
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-[1.25rem] bg-slate-50 p-4 dark:bg-slate-900/80">
-                  {appointment.notes ? (
-                    <p className="whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
-                      {appointment.notes}
-                    </p>
-                  ) : (
-                    <p className="text-sm italic text-slate-500 dark:text-slate-400">
-                      Aucune note ajoutée pour le moment.
-                    </p>
-                  )}
-                </div>
-              )}
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {appointment.notes || "Aucune note ajoutée pour le moment."}
+              </p>
             </div>
           </div>
 
-          <DialogFooter className="flex flex-col gap-3 sm:flex-row">
-            <div className="flex flex-1 flex-wrap gap-2">
+          <DialogFooter className="flex-col gap-3 sm:flex-row">
+            <div className="flex flex-wrap gap-2">
               {appointment.status.toLowerCase() === "scheduled" && (
                 <JoinCallButton
                   appointmentId={appointment.id}
@@ -511,54 +353,33 @@ export function AppointmentCard({
                   userRole={userRole.toLowerCase() as "doctor" | "patient"}
                 />
               )}
-
               {canMarkCompleted() && (
-                <Button
-                  onClick={handleMarkCompleted}
-                  disabled={completeLoading}
-                  className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
-                >
+                <Button onClick={handleMarkCompleted} disabled={completeLoading} className="gap-2">
                   {completeLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      En cours...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Marquer terminé
-                    </>
+                    <CheckCircle className="h-4 w-4" />
                   )}
+                  Marquer terminé
                 </Button>
               )}
-
               {appointment.status.toLowerCase() === "scheduled" && (
                 <Button
                   variant="outline"
                   onClick={handleCancelAppointment}
                   disabled={cancelLoading}
-                  className="rounded-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-950/30"
+                  className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
                 >
                   {cancelLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Annulation...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <>
-                      <X className="mr-2 h-4 w-4" />
-                      Annuler le rendez-vous
-                    </>
+                    <X className="h-4 w-4" />
                   )}
+                  Annuler
                 </Button>
               )}
             </div>
-
-            <Button
-              onClick={() => setOpen(false)}
-              variant="outline"
-              className="rounded-full border-emerald-200 bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
-            >
+            <Button variant="ghost" onClick={() => setOpen(false)}>
               Fermer
             </Button>
           </DialogFooter>
@@ -572,30 +393,21 @@ function getStatusColors(status: string) {
   switch (status) {
     case "completed":
       return {
-        background: "bg-emerald-50/70 dark:bg-emerald-950/20",
-        border: "border-emerald-100 dark:border-emerald-900/40",
-        icon: "text-emerald-700 dark:text-emerald-300",
-        iconWrap: "bg-white dark:bg-slate-900",
-        badge:
-          "border-emerald-200 bg-white text-emerald-700 hover:bg-white dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-emerald-300",
+        cardClass: "border-success/30",
+        iconBg: "bg-success/10 text-success",
+        badgeVariant: "success",
       };
     case "cancelled":
       return {
-        background: "bg-red-50/70 dark:bg-red-950/20",
-        border: "border-red-100 dark:border-red-900/40",
-        icon: "text-red-700 dark:text-red-300",
-        iconWrap: "bg-white dark:bg-slate-900",
-        badge:
-          "border-red-200 bg-white text-red-700 hover:bg-white dark:border-red-900/50 dark:bg-slate-950/70 dark:text-red-300",
+        cardClass: "border-destructive/30",
+        iconBg: "bg-destructive/10 text-destructive",
+        badgeVariant: "destructive",
       };
     default:
       return {
-        background: "bg-white/90 dark:bg-slate-950/70",
-        border: "border-emerald-100 dark:border-emerald-900/40",
-        icon: "text-emerald-700 dark:text-emerald-300",
-        iconWrap: "bg-emerald-50 dark:bg-emerald-950/40",
-        badge:
-          "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",
+        cardClass: "",
+        iconBg: "bg-primary/10 text-primary",
+        badgeVariant: "info",
       };
   }
 }
@@ -604,46 +416,18 @@ function InfoTile({
   icon: Icon,
   label,
   value,
-  large = false,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
-  large?: boolean;
 }) {
   return (
-    <div className="rounded-[1.25rem] bg-slate-50 p-4 dark:bg-slate-900/80">
-      <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-        <Icon className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+    <div className="metric-card">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <Icon className="h-3.5 w-3.5" />
         {label}
       </div>
-      <p className={`${large ? "text-base" : "text-sm"} font-semibold text-slate-900 dark:text-slate-50`}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function DetailBlock({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: any;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[1.5rem] border border-emerald-100 bg-white/80 p-4 dark:border-emerald-900/40 dark:bg-slate-900/70">
-      <div className="mb-3 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
-        <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-200">
-          {title}
-        </h4>
-      </div>
-      <p className="whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
-        {children}
-      </p>
+      <p className="text-sm font-medium text-foreground">{value}</p>
     </div>
   );
 }
