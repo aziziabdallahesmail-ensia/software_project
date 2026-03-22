@@ -19,10 +19,10 @@ import {
   LogOut,
   Calendar,
   Stethoscope,
-  Settings,
   Home,
   Clock,
-  Users,
+  ChevronDown,
+  Activity,
 } from "lucide-react";
 
 interface Profile {
@@ -41,25 +41,27 @@ export function Header({ user }: HeaderProps) {
   const pathname = usePathname();
   const [currentTime, setCurrentTime] = useState<string>("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Update time every second
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       const formattedTime = now.toLocaleString("fr-FR", {
-        weekday: "long",
+        weekday: "short",
         day: "numeric",
-        month: "long",
-        year: "numeric",
+        month: "short",
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit",
       });
       setCurrentTime(formattedTime);
     };
 
     updateTime();
-    const interval = setInterval(updateTime, 1000);
+    const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -69,36 +71,33 @@ export function Header({ user }: HeaderProps) {
     window.location.href = "/";
   };
 
-  // Role-based navigation links
   const getNavigationLinks = () => {
     if (!user) return [];
 
     if (user.role === "admin") {
       return [
         { href: "/home", label: "Accueil", icon: Home },
-        { href: "/admin", label: "Tableau de bord", icon: Settings },
-        { href: "/admin/pending-verification", label: "Vérifications", icon: Users },
-        { href: "/admin/configuration", label: "Configuration", icon: Settings },
-        { href: "/list_doctors", label: "Médecins", icon: Stethoscope }, 
+        { href: "/admin", label: "Tableau de bord", icon: Activity },
+        { href: "/admin/pending-verification", label: "Vérifications", icon: Stethoscope },
+        { href: "/list_doctors", label: "Médecins", icon: Calendar },
       ];
     }
 
     if (user.role === "doctor") {
-      const isVerified = user.verificationStatus === "approved";
+      const isVerified = user.verificationStatus === "verified";
       if (isVerified) {
         return [
           { href: "/doctor", label: "Mon espace", icon: Stethoscope },
-          { href: "/appointments", label: "Mes rendez-vous", icon: Calendar },
+          { href: "/appointments", label: "Rendez-vous", icon: Calendar },
         ];
       }
-      
     }
 
     if (user.role === "patient") {
       return [
         { href: "/home", label: "Accueil", icon: Home },
-        { href: "/list_doctors", label: "Trouver un médecin", icon: Stethoscope },
-        { href: "/appointments", label: "Mes rendez-vous", icon: Calendar },
+        { href: "/list_doctors", label: "Médecins", icon: Stethoscope },
+        { href: "/appointments", label: "Rendez-vous", icon: Calendar },
       ];
     }
 
@@ -110,16 +109,16 @@ export function Header({ user }: HeaderProps) {
 
     const roleConfig: Record<string, { label: string; className: string }> = {
       admin: {
-        label: "Administrateur",
-        className: "bg-gradient-to-r from-purple-500 to-indigo-500 text-white border-0",
+        label: "Admin",
+        className: "bg-primary/10 text-primary border-primary/20",
       },
       doctor: {
         label: "Médecin",
-        className: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0",
+        className: "bg-accent/10 text-accent border-accent/20",
       },
       patient: {
         label: "Patient",
-        className: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0",
+        className: "bg-success/10 text-success border-success/20",
       },
     };
 
@@ -127,7 +126,7 @@ export function Header({ user }: HeaderProps) {
     if (!config) return null;
 
     return (
-      <Badge className={config.className}>
+      <Badge variant="outline" className={config.className}>
         {config.label}
       </Badge>
     );
@@ -136,21 +135,19 @@ export function Header({ user }: HeaderProps) {
   const navLinks = getNavigationLinks();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-card/80 backdrop-blur-md supports-[backdrop-filter]:bg-card/60">
+      <div className="container mx-auto px-4 lg:px-6">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/home" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
-              <Stethoscope className="h-5 w-5 text-white" />
+          <Link href="/home" className="flex items-center gap-3 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-sm">
+              <Stethoscope className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <span className="font-semibold text-lg text-foreground">
               MédiConnect
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -158,10 +155,10 @@ export function Header({ user }: HeaderProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -171,31 +168,31 @@ export function Header({ user }: HeaderProps) {
             })}
           </nav>
 
-          {/* Right side: Time, User info, Actions */}
-          <div className="flex items-center gap-4">
-            {/* Current Time */}
-            <div className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span className="capitalize">{currentTime}</span>
-            </div>
+          <div className="flex items-center gap-3">
+            {mounted && (
+              <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-lg">
+                <Clock className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">{currentTime}</span>
+              </div>
+            )}
 
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600">
-                      <User className="h-4 w-4 text-white" />
+                  <Button variant="ghost" className="flex items-center gap-2 h-auto py-1.5 px-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                      <User className="h-4 w-4 text-primary-foreground" />
                     </div>
                     <div className="hidden sm:flex flex-col items-start">
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium leading-tight">
                         {user.full_name || user.email?.split("@")[0] || "Utilisateur"}
                       </span>
-                      {getRoleBadge()}
                     </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="flex flex-col gap-1 p-2">
+                <DropdownMenuContent align="end" className="w-64 rounded-xl border-border/60 shadow-lg">
+                  <div className="flex flex-col gap-2 p-3">
                     <p className="text-sm font-medium">
                       {user.full_name || "Utilisateur"}
                     </p>
@@ -204,22 +201,22 @@ export function Header({ user }: HeaderProps) {
                     </p>
                     <div className="mt-1">{getRoleBadge()}</div>
                   </div>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-border/60" />
                   {navLinks.map((link) => {
                     const Icon = link.icon;
                     return (
                       <DropdownMenuItem key={link.href} asChild>
-                        <Link href={link.href} className="flex items-center gap-2">
+                        <Link href={link.href} className="flex items-center gap-2 rounded-lg cursor-pointer">
                           <Icon className="h-4 w-4" />
                           {link.label}
                         </Link>
                       </DropdownMenuItem>
                     );
                   })}
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-border/60" />
                   <DropdownMenuItem
                     onClick={handleLogout}
-                    className="text-red-600 dark:text-red-400 focus:text-red-600"
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Se déconnecter
@@ -229,26 +226,22 @@ export function Header({ user }: HeaderProps) {
             ) : (
               <div className="flex items-center gap-2">
                 <Link href="/auth/login">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                     Connexion
                   </Button>
                 </Link>
                 <Link href="/auth/sign-up">
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
-                  >
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary-hover">
                     S'inscrire
                   </Button>
                 </Link>
               </div>
             )}
 
-            {/* Mobile menu button */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="lg:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <Menu className="h-5 w-5" />
@@ -256,15 +249,15 @@ export function Header({ user }: HeaderProps) {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 border-t">
+          <nav className="lg:hidden py-4 border-t border-border/60">
             <div className="flex flex-col space-y-1">
-              {/* Mobile Time */}
-              <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span className="capitalize">{currentTime}</span>
-              </div>
+              {mounted && (
+                <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">{currentTime}</span>
+                </div>
+              )}
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = pathname === link.href;
@@ -273,10 +266,10 @@ export function Header({ user }: HeaderProps) {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-600 dark:text-emerald-400"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -287,7 +280,7 @@ export function Header({ user }: HeaderProps) {
               {user && (
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10"
                 >
                   <LogOut className="h-4 w-4" />
                   Se déconnecter
