@@ -9,7 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Award, MoreHorizontal, Power, ShieldCheck, Star, UserRound } from "lucide-react";
+import { MoreHorizontal, Power, Star, StarOff, UserRound } from "lucide-react";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ * One administered practitioner. Actions live behind a menu so the row stays
+ * scannable; state is carried by the shared chip vocabulary. */
 
 interface DoctorCardProps {
   doctor: {
@@ -37,111 +41,100 @@ export function DoctorCard({
   isPending,
 }: DoctorCardProps) {
   return (
-    <div className="card-clinical p-5 transition-all duration-200 hover:-translate-y-0.5">
-      <div className="flex items-start gap-4">
-        <div className="icon-container icon-container-lg bg-primary/10 text-primary flex-shrink-0">
-          <UserRound className="h-6 w-6" />
-        </div>
+    <article className="surface p-4">
+      <div className="flex items-start gap-3.5">
+        <span className="icon-container icon-container-md shrink-0">
+          <UserRound className="h-4 w-4" />
+        </span>
 
         <div className="min-w-0 flex-1">
-          <div className="mb-3 flex items-start justify-between gap-3">
-            <div className="space-y-2">
-              <h3 className="text-base font-semibold text-foreground">
-                Dr. {doctor.full_name}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                  {doctor.specialty}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className={
-                    doctor.isActive
-                      ? "bg-success/5 text-success border-success/20"
-                      : "bg-destructive/5 text-destructive border-destructive/20"
-                  }
-                >
-                  {doctor.isActive ? "Actif" : "Suspendu"}
-                </Badge>
-                {doctor.isPromoted && (
-                  <Badge variant="info">
-                    <Star className="h-3 w-3 mr-1 fill-current" />
-                    En avant
-                  </Badge>
-                )}
-              </div>
-            </div>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h3 className="truncate font-display text-base font-medium tracking-display">
+              Dr. {doctor.full_name}
+            </h3>
+            <span className="truncate text-xs text-muted-foreground">
+              {doctor.specialty}
+            </span>
+          </div>
 
-            {doctor.experience && (
-              <div className="metric-card text-center flex-shrink-0">
-                <p className="text-xl font-semibold text-foreground">
-                  {doctor.experience}
-                </p>
-                <p className="text-xs text-muted-foreground">ans</p>
-              </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {doctor.isActive ? (
+              <Badge variant="success">Actif</Badge>
+            ) : (
+              <Badge variant="secondary">Suspendu</Badge>
+            )}
+            {doctor.isPromoted && (
+              <Badge variant="warning" dot={false}>
+                <Star className="h-3 w-3 fill-current" />
+                Mis en avant
+              </Badge>
+            )}
+            {typeof doctor.experience === "number" && (
+              <span className="text-xs text-muted-foreground">
+                <span className="tabular">{doctor.experience}</span>{" "}
+                {doctor.experience > 1 ? "ans" : "an"}
+              </span>
             )}
           </div>
 
-          <p className="line-clamp-2 text-sm text-muted-foreground mb-4">
-            {doctor.description}
-          </p>
-
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <ShieldCheck className="h-4 w-4" />
-              Détails
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="iconSm" disabled={isPending}>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-lg">
-                {doctor.isActive ? (
-                  <DropdownMenuItem
-                    onClick={() => onSuspend?.(doctor.id)}
-                    disabled={isPending}
-                    className="gap-2 text-destructive focus:text-destructive"
-                  >
-                    <Power className="h-4 w-4" />
-                    Suspendre
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem
-                    onClick={() => onActivate?.(doctor.id)}
-                    disabled={isPending}
-                    className="gap-2"
-                  >
-                    <ShieldCheck className="h-4 w-4" />
-                    Activer
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                {doctor.isPromoted ? (
-                  <DropdownMenuItem
-                    onClick={() => onUnpromote?.(doctor.id)}
-                    disabled={isPending}
-                    className="gap-2"
-                  >
-                    <Award className="h-4 w-4" />
-                    Retirer mise en avant
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem
-                    onClick={() => onPromote?.(doctor.id)}
-                    disabled={isPending}
-                    className="gap-2"
-                  >
-                    <Star className="h-4 w-4" />
-                    Mettre en avant
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {doctor.description && (
+            <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+              {doctor.description}
+            </p>
+          )}
         </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="iconSm"
+              disabled={isPending}
+              aria-label={`Actions pour Dr. ${doctor.full_name}`}
+              className="shrink-0"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {doctor.isPromoted ? (
+              <DropdownMenuItem
+                onClick={() => onUnpromote?.(doctor.id)}
+                className="cursor-pointer"
+              >
+                <StarOff className="mr-2 h-4 w-4" />
+                Retirer la mise en avant
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => onPromote?.(doctor.id)}
+                className="cursor-pointer"
+              >
+                <Star className="mr-2 h-4 w-4" />
+                Mettre en avant
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            {doctor.isActive ? (
+              <DropdownMenuItem
+                onClick={() => onSuspend?.(doctor.id)}
+                className="cursor-pointer text-destructive focus:bg-destructive-soft focus:text-destructive"
+              >
+                <Power className="mr-2 h-4 w-4" />
+                Suspendre le compte
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => onActivate?.(doctor.id)}
+                className="cursor-pointer"
+              >
+                <Power className="mr-2 h-4 w-4" />
+                Réactiver le compte
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-    </div>
+    </article>
   );
 }

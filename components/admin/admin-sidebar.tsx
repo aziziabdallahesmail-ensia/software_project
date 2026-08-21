@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { ShieldAlert, Users, Settings } from "lucide-react";
+
+/* Hallmark · design-system: design.md
+ * Sub-navigation for the admin area. Active state is a drawn marker, not a
+ * filled pill. Scrolls horizontally on mobile rather than stacking tall. */
 
 interface NavItem {
   label: string;
@@ -28,7 +31,7 @@ export function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
     {
-      label: "Médecins",
+      label: "Praticiens",
       href: "/admin",
       icon: <Users className="h-4 w-4" />,
     },
@@ -40,47 +43,36 @@ export function AdminSidebar({ pendingCount = 0 }: AdminSidebarProps) {
   ];
 
   return (
-    <aside className="w-full lg:w-72 flex-shrink-0">
-      <nav className="card-clinical p-4">
-        <div className="mb-3 px-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Navigation
-          </p>
-        </div>
-        <div className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-lg",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-muted-foreground"
-                  )}
-                >
-                  {item.icon}
+    <aside className="w-full shrink-0 lg:w-56">
+      <p className="label-meta mb-3 hidden lg:block">Administration</p>
+      <nav
+        className="scrollbar-thin -mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0"
+        aria-label="Navigation administration"
+      >
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-[var(--radius-control)] px-3 py-2 text-sm transition-colors duration-fast ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:shrink",
+                isActive
+                  ? "bg-primary-soft font-medium text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+            >
+              {item.icon}
+              <span className="flex-1">{item.label}</span>
+              {item.badge && (
+                <span className="tabular ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-[var(--radius-chip)] border border-destructive/25 bg-destructive-soft px-1.5 text-[0.6875rem] font-medium text-destructive">
+                  {item.badge}
                 </span>
-                <span className="flex-1">{item.label}</span>
-                {item.badge && (
-                  <Badge variant="destructive" className="ml-auto h-5 min-w-5 justify-center rounded-full px-1.5 text-xs">
-                    {item.badge}
-                  </Badge>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+              )}
+            </Link>
+          );
+        })}
       </nav>
     </aside>
   );

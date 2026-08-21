@@ -4,14 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageTitle } from "@/components/page-title";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Mic, MicOff, Video, VideoOff, PhoneOff, Loader2, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Mic, MicOff, Video, VideoOff, PhoneOff, Loader2 } from "lucide-react";
 import { initializeVideoCall, leaveVideoCall } from "@/actions/video-call";
 import toast from "react-hot-toast";
 
@@ -35,6 +29,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
   const [isConnecting, setIsConnecting] = useState(true);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [appointmentData, setAppointmentData] = useState<any>(null);
+  const [userRole, setUserRole] = useState<"doctor" | "patient" | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -50,6 +45,7 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
         if (!mounted) return;
 
         setAppointmentData(result.appointment);
+        setUserRole(result.userRole === "doctor" ? "doctor" : "patient");
 
         const Video = (await import("twilio-video")).default;
 
@@ -190,152 +186,204 @@ export default function VideoCall({ appointmentId, backLink }: VideoCallProps) {
 
   if (connectionError) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background p-6">
-        <div className="container mx-auto">
-          <PageTitle title="Appel vidéo" backLink={backLink} backLabel="Retour" />
-          <Card className="max-w-md mx-auto mt-8">
-            <CardHeader>
-              <CardTitle>Erreur de connexion</CardTitle>
-              <CardDescription>{connectionError}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => router.push(backLink)} className="w-full">
-                Revenir
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="mx-auto w-full max-w-[36rem] px-4 py-12">
+        <PageTitle
+          title="Consultation vidéo"
+          eyebrow="Connexion interrompue"
+          backLink={backLink}
+          backLabel="Retour"
+        />
+        <div className="surface flex items-start gap-3 border-destructive/25 bg-destructive-soft p-5">
+          <PhoneOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div className="min-w-0">
+            <h2 className="font-display text-base font-medium tracking-display text-destructive">
+              La connexion a échoué
+            </h2>
+            <p className="mt-1 break-words text-sm text-destructive/90">
+              {connectionError}
+            </p>
+          </div>
         </div>
+        <Button className="mt-6" onClick={() => router.push(backLink)}>
+          Revenir
+        </Button>
       </div>
     );
   }
 
   if (isConnecting) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background p-6">
-        <div className="container mx-auto">
-          <PageTitle title="Appel vidéo" backLink={backLink} backLabel="Retour" />
-          <Card className="max-w-md mx-auto mt-8">
-            <CardHeader>
-              <CardTitle>Connexion en cours...</CardTitle>
-              <CardDescription>Veuillez patienter pendant la connexion à l&apos;appel.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </CardContent>
-          </Card>
+      <div className="mx-auto w-full max-w-[36rem] px-4 py-12">
+        <PageTitle
+          title="Consultation vidéo"
+          eyebrow="Connexion"
+          backLink={backLink}
+          backLabel="Retour"
+        />
+        <div className="surface flex items-center gap-3 p-5">
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">
+            Établissement de la connexion sécurisée…
+          </p>
         </div>
       </div>
     );
   }
 
-  const doctorName = appointmentData?.doctor?.full_name || "Docteur";
+  const doctorName = appointmentData?.doctor?.full_name || "Praticien";
   const patientName = appointmentData?.patient?.full_name || "Patient";
 
+  // The local participant is whoever is watching; the other side is present
+  // only once their tracks arrive.
+  const viewerIsDoctor = userRole === "doctor";
+  const participants = [
+    {
+      key: "doctor",
+      name: doctorName,
+      role: appointmentData?.doctor?.specialty || "Praticien",
+      isViewer: viewerIsDoctor,
+      present: viewerIsDoctor || Boolean(remoteParticipant),
+    },
+    {
+      key: "patient",
+      name: patientName,
+      role: "Patient",
+      isViewer: !viewerIsDoctor,
+      present: !viewerIsDoctor || Boolean(remoteParticipant),
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background p-6">
-      <div className="container mx-auto">
-        <PageTitle title="Appel vidéo" backLink={backLink} backLabel="Retour" />
+    <div className="mx-auto w-full max-w-[88rem] px-4 py-8 lg:px-6">
+      <PageTitle
+        title="Consultation vidéo"
+        eyebrow="En cours"
+        backLink={backLink}
+        backLabel="Retour"
+      />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <Card className="lg:col-span-3 relative overflow-hidden">
-            <CardContent className="p-0 bg-black rounded-xl overflow-hidden">
-              <div className="relative w-full h-[60vh] lg:h-[72vh] bg-black">
-                <video
-                  ref={remoteVideoRef}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  playsInline
-                />
-                <audio ref={remoteAudioRef} autoPlay />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]">
+        {/* Stage */}
+        <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-border bg-stage">
+          <div className="relative h-[58vh] w-full lg:h-[70vh]">
+            <video
+              ref={remoteVideoRef}
+              className="h-full w-full object-cover"
+              autoPlay
+              playsInline
+            />
+            <audio ref={remoteAudioRef} autoPlay />
 
-                {!remoteParticipant && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
-                    <div className="text-center text-white">
-                      <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                      <p className="text-sm">En attente de l&apos;autre participant...</p>
-                    </div>
-                  </div>
-                )}
+            {!remoteParticipant && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-stage text-center">
+                <Loader2 className="h-5 w-5 animate-spin text-stage-fg/70" />
+                <p className="px-6 text-sm text-stage-fg/70">
+                  En attente de l&apos;autre participant…
+                </p>
               </div>
+            )}
+          </div>
 
-              <div className="absolute right-4 bottom-4 w-36 h-24 lg:w-48 lg:h-32 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg">
-                <video
-                  ref={localVideoRef}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                  playsInline
-                />
-                {!cameraOn && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-800 text-white text-xs">
-                    Caméra désactivée
-                  </div>
-                )}
+          {/* Self view */}
+          <div className="absolute bottom-4 right-4 h-24 w-36 overflow-hidden rounded-[var(--radius-control)] border border-stage-rule bg-stage-2 lg:h-32 lg:w-48">
+            <video
+              ref={localVideoRef}
+              className="h-full w-full object-cover"
+              autoPlay
+              muted
+              playsInline
+            />
+            {!cameraOn && (
+              <div className="absolute inset-0 flex items-center justify-center bg-stage-2 px-2 text-center text-xs text-stage-fg/70">
+                Caméra désactivée
               </div>
+            )}
+          </div>
 
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex gap-2 bg-card/90 backdrop-blur rounded-full p-2">
-                <Button
-                  variant={micOn ? "ghost" : "destructive"}
-                  size="icon"
-                  onClick={toggleMic}
-                  title={micOn ? "Couper le micro" : "Réactiver le micro"}
-                >
-                  {micOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-                </Button>
+          {/* Controls */}
+          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 rounded-[var(--radius-chip)] border border-border bg-card p-1.5">
+            <Button
+              variant={micOn ? "ghost" : "destructiveSolid"}
+              size="icon"
+              onClick={toggleMic}
+              aria-pressed={!micOn}
+              aria-label={micOn ? "Couper le micro" : "Réactiver le micro"}
+            >
+              {micOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+            </Button>
 
-                <Button
-                  variant={cameraOn ? "ghost" : "destructive"}
-                  size="icon"
-                  onClick={toggleCamera}
-                  title={cameraOn ? "Couper la caméra" : "Réactiver la caméra"}
-                >
-                  {cameraOn ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
-                </Button>
+            <Button
+              variant={cameraOn ? "ghost" : "destructiveSolid"}
+              size="icon"
+              onClick={toggleCamera}
+              aria-pressed={!cameraOn}
+              aria-label={cameraOn ? "Couper la caméra" : "Réactiver la caméra"}
+            >
+              {cameraOn ? (
+                <Video className="h-4 w-4" />
+              ) : (
+                <VideoOff className="h-4 w-4" />
+              )}
+            </Button>
 
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={handleEndCall}
-                  title="Quitter l'appel"
-                >
-                  <PhoneOff className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Participants</CardTitle>
-              <CardDescription className="text-xs">
-                Connexion sécurisée • {formatTime(seconds)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                  {doctorName.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{doctorName}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {appointmentData?.doctor?.specialty || "Docteur"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-success flex items-center justify-center text-success-foreground text-sm font-medium">
-                  {patientName.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{patientName}</div>
-                  <div className="text-xs text-muted-foreground">Patient</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <Button
+              variant="destructiveSolid"
+              size="icon"
+              onClick={handleEndCall}
+              aria-label="Quitter la consultation"
+            >
+              <PhoneOff className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
+
+        {/* Session panel */}
+        <aside className="surface flex flex-col p-5">
+          <div className="flex items-center justify-between gap-3 border-b border-border-soft pb-3">
+            <h2 className="label-meta">Session</h2>
+            <span className="tabular text-sm font-medium text-foreground">
+              {formatTime(seconds)}
+            </span>
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Connexion chiffrée de bout en bout.
+          </p>
+
+          <h3 className="label-meta mt-5">Participants</h3>
+          <ul className="mt-3 flex flex-col divide-y divide-border-soft border-y border-border-soft">
+            {participants.map((person) => (
+              <li key={person.key} className="flex items-center gap-3 py-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-border-soft bg-muted text-sm font-medium text-muted-foreground">
+                  {person.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-foreground">
+                    {person.name}
+                    {person.isViewer && (
+                      <span className="text-muted-foreground"> (vous)</span>
+                    )}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {person.role}
+                  </span>
+                </span>
+                <Badge variant={person.present ? "success" : "secondary"}>
+                  {person.present ? "Connecté" : "En attente"}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+
+          <Button
+            variant="destructive"
+            className="mt-5 w-full"
+            onClick={handleEndCall}
+          >
+            <PhoneOff className="h-4 w-4" />
+            Quitter la consultation
+          </Button>
+        </aside>
       </div>
     </div>
   );

@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Card, CardContent } from "@/components/ui/card";
+import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import {
-  Calendar,
-  Clock3,
   User,
   Stethoscope,
   X,
@@ -26,7 +24,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   cancelAppointment,
-  addAppointmentNotes,
   markAppointmentCompleted,
 } from "@/actions/doctor";
 import { JoinCallButton } from "@/components/join-call-button";
@@ -34,22 +31,35 @@ import useFetch from "@/hooks/use-fetch";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ * One appointment row. Times are mono. Status uses the shared chip vocabulary
+ * with French labels — the raw enum is never shown to the user.
+ * Destructive actions confirm inline, scoped to the row (no window.confirm). */
+
 interface AppointmentCardProps {
   appointment: {
     id: string;
     startTime: Date | string;
     endTime: Date | string;
     status: string;
-    notes?: string;
-    patientDescription?: string;
-    videoRoomName?: string;
-    callDurationMinutes?: number;
-    patient?: { full_name: string; email?: string; specialty?: string };
-    doctor?: { full_name: string; email?: string; specialty?: string };
+    notes?: string | null;
+    patientDescription?: string | null;
+    videoRoomName?: string | null;
+    callDurationMinutes?: number | null;
+    patient?: { full_name: string | null; email?: string | null; specialty?: string | null } | null;
+    doctor?: { full_name: string | null; email?: string | null; specialty?: string | null } | null;
   };
   userRole: "DOCTOR" | "PATIENT";
   refetchAppointments?: () => void;
 }
+
+type BadgeVariant = "secondary" | "destructive" | "success" | "warning" | "info";
+
+const statusMeta: Record<string, { label: string; variant: BadgeVariant }> = {
+  scheduled: { label: "Programmé", variant: "info" },
+  completed: { label: "Terminé", variant: "success" },
+  cancelled: { label: "Annulé", variant: "destructive" },
+};
 
 export function AppointmentCard({
   appointment,
@@ -57,7 +67,9 @@ export function AppointmentCard({
   refetchAppointments,
 }: AppointmentCardProps) {
   const [open, setOpen] = useState(false);
-  const [notes, setNotes] = useState(appointment.notes || "");
+  const [confirming, setConfirming] = useState<null | "cancel" | "complete">(
+    null,
+  );
   const router = useRouter();
 
   const {
@@ -66,15 +78,16 @@ export function AppointmentCard({
     data: cancelData,
   } = useFetch(cancelAppointment);
   const {
-    loading: notesLoading,
-    execute: submitNotes,
-    data: notesData,
-  } = useFetch(addAppointmentNotes);
-  const {
     loading: completeLoading,
     execute: submitMarkCompleted,
     data: completeData,
   } = useFetch(markAppointmentCompleted);
+
+  const status = appointment.status.toLowerCase();
+  const meta = statusMeta[status] ?? {
+    label: appointment.status,
+    variant: "secondary" as BadgeVariant,
+  };
 
   const formatTime = (dateString: Date | string) => {
     try {
@@ -85,35 +98,28 @@ export function AppointmentCard({
   };
 
   const canMarkCompleted = () => {
-    if (userRole !== "DOCTOR" || appointment.status.toLowerCase() !== "scheduled") {
-      return false;
-    }
-    const now = new Date();
-    const appointmentStartTime = new Date(appointment.startTime);
-    return now >= appointmentStartTime;
+    if (userRole !== "DOCTOR" || status !== "scheduled") return false;
+    return new Date() >= new Date(appointment.startTime);
   };
 
   const handleCancelAppointment = async () => {
     if (cancelLoading) return;
-    if (window.confirm("Êtes-vous sûr de vouloir annuler ce rendez-vous ?")) {
-      const formData = new FormData();
-      formData.append("appointmentId", appointment.id);
-      await submitCancel(formData);
-    }
+    const formData = new FormData();
+    formData.append("appointmentId", appointment.id);
+    await submitCancel(formData);
   };
 
   const handleMarkCompleted = async () => {
     if (completeLoading) return;
-    if (window.confirm("Êtes-vous sûr de vouloir marquer ce rendez-vous comme terminé ?")) {
-      const formData = new FormData();
-      formData.append("appointmentId", appointment.id);
-      await submitMarkCompleted(formData);
-    }
+    const formData = new FormData();
+    formData.append("appointmentId", appointment.id);
+    await submitMarkCompleted(formData);
   };
 
   useEffect(() => {
     if (cancelData?.success) {
-      toast.success("Rendez-vous annulé avec succès");
+      toast.success("Rendez-vous annulé.");
+      setConfirming(null);
       setOpen(false);
       refetchAppointments ? refetchAppointments() : router.refresh();
     }
@@ -121,230 +127,240 @@ export function AppointmentCard({
 
   useEffect(() => {
     if (completeData?.success) {
-      toast.success("Rendez-vous marqué comme terminé");
+      toast.success("Rendez-vous marqué comme terminé.");
+      setConfirming(null);
       setOpen(false);
       refetchAppointments ? refetchAppointments() : router.refresh();
     }
   }, [completeData, refetchAppointments, router]);
 
-  useEffect(() => {
-    if (notesData?.success) {
-      toast.success("Notes enregistrées avec succès");
-      refetchAppointments ? refetchAppointments() : router.refresh();
-    }
-  }, [notesData, refetchAppointments, router]);
-
-  const otherParty = userRole === "DOCTOR" ? appointment.patient : appointment.doctor;
-  const statusColors = getStatusColors(appointment.status.toLowerCase());
+  const otherParty =
+    userRole === "DOCTOR" ? appointment.patient : appointment.doctor;
+  const partyName =
+    userRole === "DOCTOR"
+      ? otherParty?.full_name
+      : `Dr. ${otherParty?.full_name}`;
 
   return (
     <>
-      <Card className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${statusColors.cardClass}`}>
-        <CardContent className="space-y-4 p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`icon-container icon-container-md ${statusColors.iconBg}`}>
-                {userRole === "DOCTOR" ? <User className="h-5 w-5" /> : <Stethoscope className="h-5 w-5" />}
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {userRole === "DOCTOR" ? "Patient" : "Médecin"}
-                </p>
-                <h3 className="text-base font-semibold text-foreground">
-                  {userRole === "DOCTOR" ? otherParty?.full_name : `Dr. ${otherParty?.full_name}`}
-                </h3>
-                {userRole === "PATIENT" && (
-                  <p className="text-xs text-muted-foreground">{otherParty?.specialty}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Badge variant={statusColors.badgeVariant as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info"}>
-                {appointment.status}
-              </Badge>
-              {appointment.videoRoomName && (
-                <Badge variant="info" className="gap-1">
-                  <Video className="h-3 w-3" />
-                  Vidéo
-                </Badge>
-              )}
-            </div>
+      <article className="surface-interactive p-4 sm:p-5">
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+          {/* When */}
+          <div className="w-full shrink-0 border-b border-border-soft pb-3 sm:w-32 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
+            <p className="tabular text-lg font-medium leading-none text-foreground">
+              {formatTime(appointment.startTime)}
+            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground first-letter:uppercase">
+              {format(new Date(appointment.startTime), "EEE d MMM yyyy", {
+                locale: fr,
+              })}
+            </p>
+            <p className="tabular mt-0.5 text-[0.6875rem] text-muted-foreground">
+              → {formatTime(appointment.endTime)}
+            </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <InfoTile
-              icon={Calendar}
-              label="Date"
-              value={format(new Date(appointment.startTime), "d MMM yyyy")}
-            />
-            <InfoTile
-              icon={Clock3}
-              label="Heure"
-              value={`${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`}
-            />
-          </div>
-
-          {appointment.status.toLowerCase() === "completed" && appointment.callDurationMinutes && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-success/5 border border-success/20">
-              <div className="icon-container icon-container-sm bg-card">
-                <Video className="h-4 w-4 text-success" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Consultation vidéo terminée</p>
-                <p className="text-xs text-muted-foreground">{appointment.callDurationMinutes} minutes</p>
-              </div>
-              <Badge variant="success">Terminée</Badge>
-            </div>
-          )}
-
-          {appointment.status.toLowerCase() === "scheduled" && (
-            <div className="p-3 rounded-lg bg-secondary/50">
-              <div className="flex items-center gap-2 mb-2">
-                <Video className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold text-foreground">Consultation vidéo</span>
-              </div>
-              <JoinCallButton
-                appointmentId={appointment.id}
-                startTime={appointment.startTime}
-                endTime={appointment.endTime}
-                status={appointment.status}
-                userRole={userRole.toLowerCase() as "doctor" | "patient"}
-              />
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            {canMarkCompleted() && (
-              <Button
-                size="sm"
-                onClick={handleMarkCompleted}
-                disabled={completeLoading}
-                className="gap-1.5"
-              >
-                {completeLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <CheckCircle className="h-4 w-4" />
-                )}
-                Marquer terminé
-              </Button>
+          {/* Who */}
+          <div className="min-w-0 flex-1">
+            <p className="label-meta">
+              {userRole === "DOCTOR" ? "Patient" : "Praticien"}
+            </p>
+            <h3 className="mt-1 truncate font-display text-base font-medium tracking-display">
+              {partyName}
+            </h3>
+            {userRole === "PATIENT" && otherParty?.specialty && (
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {otherParty.specialty}
+              </p>
             )}
+          </div>
 
-            {appointment.status.toLowerCase() === "scheduled" && (
+          {/* State */}
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {status === "completed" &&
+              typeof appointment.callDurationMinutes === "number" && (
+                <span className="tabular text-xs text-muted-foreground">
+                  {appointment.callDurationMinutes} min
+                </span>
+              )}
+            {appointment.videoRoomName && (
+              <Badge variant="secondary" dot={false}>
+                <Video className="h-3 w-3" />
+                Vidéo
+              </Badge>
+            )}
+            <Badge variant={meta.variant}>{meta.label}</Badge>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border-soft pt-3.5">
+          {status === "scheduled" && (
+            <JoinCallButton
+              appointmentId={appointment.id}
+              startTime={appointment.startTime}
+              endTime={appointment.endTime}
+              status={appointment.status}
+              userRole={userRole.toLowerCase() as "doctor" | "patient"}
+            />
+          )}
+
+          <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>
+            <FileText className="h-4 w-4" />
+            Détails
+          </Button>
+
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {canMarkCompleted() && confirming !== "complete" && (
               <Button
                 size="sm"
                 variant="outline"
-                onClick={handleCancelAppointment}
-                disabled={cancelLoading}
-                className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={() => setConfirming("complete")}
               >
-                {cancelLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <X className="h-4 w-4" />
-                )}
+                <CheckCircle className="h-4 w-4" />
+                Marquer terminé
+              </Button>
+            )}
+            {status === "scheduled" && confirming !== "cancel" && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setConfirming("cancel")}
+              >
+                <X className="h-4 w-4" />
                 Annuler
               </Button>
             )}
-
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setOpen(true)}
-              className="gap-1.5"
-            >
-              <FileText className="h-4 w-4" />
-              Détails
-            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Inline confirmation, scoped to this row */}
+        {confirming && (
+          <div
+            role="alertdialog"
+            aria-label="Confirmation"
+            className={`mt-3 flex flex-wrap items-center gap-3 rounded-[var(--radius-control)] border p-3 ${
+              confirming === "cancel"
+                ? "border-destructive/25 bg-destructive-soft"
+                : "border-border bg-muted/50"
+            }`}
+          >
+            <p className="min-w-0 flex-1 text-sm">
+              {confirming === "cancel"
+                ? "Annuler ce rendez-vous ? Le créneau sera libéré."
+                : "Marquer cette consultation comme terminée ?"}
+            </p>
+            <div className="flex shrink-0 gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setConfirming(null)}
+                disabled={cancelLoading || completeLoading}
+              >
+                Retour
+              </Button>
+              <Button
+                size="sm"
+                variant={
+                  confirming === "cancel" ? "destructiveSolid" : "default"
+                }
+                onClick={
+                  confirming === "cancel"
+                    ? handleCancelAppointment
+                    : handleMarkCompleted
+                }
+                disabled={cancelLoading || completeLoading}
+              >
+                {(cancelLoading || completeLoading) && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
+                Confirmer
+              </Button>
+            </div>
+          </div>
+        )}
+      </article>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between gap-3">
-              <DialogTitle className="text-lg font-semibold">
+              <DialogTitle className="font-display text-lg font-medium tracking-display">
                 Détails du rendez-vous
               </DialogTitle>
-              <Badge variant={statusColors.badgeVariant as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info"}>
-                {appointment.status}
-              </Badge>
+              <Badge variant={meta.variant}>{meta.label}</Badge>
             </div>
             <DialogDescription>
-              {appointment.status.toLowerCase() === "scheduled"
-                ? "Gérez votre rendez-vous à venir"
-                : "Consultez les informations du rendez-vous"}
+              {status === "scheduled"
+                ? "Gérez votre rendez-vous à venir."
+                : "Informations de la consultation."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="flex items-center gap-4 p-4 rounded-lg bg-secondary/50">
-              <div className={`icon-container icon-container-md ${statusColors.iconBg}`}>
-                {userRole === "DOCTOR" ? <User className="h-5 w-5" /> : <Stethoscope className="h-5 w-5" />}
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {userRole === "DOCTOR" ? "Patient" : "Médecin"}
-                </p>
-                <p className="text-sm font-semibold text-foreground">
-                  {userRole === "DOCTOR" ? otherParty?.full_name : `Dr. ${otherParty?.full_name}`}
-                </p>
-                {userRole === "DOCTOR" && (
-                  <p className="text-xs text-muted-foreground">{otherParty?.email}</p>
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border-soft bg-muted/40 p-4">
+              <span className="icon-container icon-container-md shrink-0">
+                {userRole === "DOCTOR" ? (
+                  <User className="h-5 w-5" />
+                ) : (
+                  <Stethoscope className="h-5 w-5" />
                 )}
-                {userRole === "PATIENT" && (
-                  <p className="text-xs text-muted-foreground">{otherParty?.specialty}</p>
-                )}
+              </span>
+              <div className="min-w-0">
+                <p className="label-meta">
+                  {userRole === "DOCTOR" ? "Patient" : "Praticien"}
+                </p>
+                <p className="truncate text-sm font-medium">{partyName}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {userRole === "DOCTOR"
+                    ? otherParty?.email
+                    : otherParty?.specialty}
+                </p>
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InfoTile
-                icon={Calendar}
-                label="Date"
-                value={format(new Date(appointment.startTime), "EEEE d MMMM yyyy")}
-              />
-              <InfoTile
-                icon={Clock3}
-                label="Durée"
-                value={`${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`}
-              />
-            </div>
+            <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-card)] border border-border bg-border sm:grid-cols-2">
+              <div className="bg-card p-4">
+                <dt className="label-meta">Date</dt>
+                <dd className="mt-1.5 text-sm font-medium first-letter:uppercase">
+                  {format(new Date(appointment.startTime), "EEEE d MMMM yyyy", {
+                    locale: fr,
+                  })}
+                </dd>
+              </div>
+              <div className="bg-card p-4">
+                <dt className="label-meta">Horaire</dt>
+                <dd className="tabular mt-1.5 text-sm font-medium">
+                  {formatTime(appointment.startTime)} –{" "}
+                  {formatTime(appointment.endTime)}
+                </dd>
+              </div>
+            </dl>
 
             {appointment.patientDescription && (
-              <div className="p-4 rounded-lg bg-secondary/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                    {userRole === "DOCTOR" ? "Description du patient" : "Votre description"}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">
+              <div>
+                <h4 className="label-meta">
+                  {userRole === "DOCTOR"
+                    ? "Motif indiqué par le patient"
+                    : "Votre motif de consultation"}
+                </h4>
+                <p className="measure mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                   {appointment.patientDescription}
                 </p>
               </div>
             )}
 
-            <div className="p-4 rounded-lg bg-secondary/50">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                    Notes
-                  </span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                {appointment.notes || "Aucune note ajoutée pour le moment."}
+            <div>
+              <h4 className="label-meta">Notes du praticien</h4>
+              <p className="measure mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                {appointment.notes || "Aucune note pour le moment."}
               </p>
             </div>
           </div>
 
-          <DialogFooter className="flex-col gap-3 sm:flex-row">
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
             <div className="flex flex-wrap gap-2">
-              {appointment.status.toLowerCase() === "scheduled" && (
+              {status === "scheduled" && (
                 <JoinCallButton
                   appointmentId={appointment.id}
                   startTime={appointment.startTime}
@@ -354,7 +370,11 @@ export function AppointmentCard({
                 />
               )}
               {canMarkCompleted() && (
-                <Button onClick={handleMarkCompleted} disabled={completeLoading} className="gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleMarkCompleted}
+                  disabled={completeLoading}
+                >
                   {completeLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
@@ -363,19 +383,18 @@ export function AppointmentCard({
                   Marquer terminé
                 </Button>
               )}
-              {appointment.status.toLowerCase() === "scheduled" && (
+              {status === "scheduled" && (
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   onClick={handleCancelAppointment}
                   disabled={cancelLoading}
-                  className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
                 >
                   {cancelLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <X className="h-4 w-4" />
                   )}
-                  Annuler
+                  Annuler le rendez-vous
                 </Button>
               )}
             </div>
@@ -386,48 +405,5 @@ export function AppointmentCard({
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function getStatusColors(status: string) {
-  switch (status) {
-    case "completed":
-      return {
-        cardClass: "border-success/30",
-        iconBg: "bg-success/10 text-success",
-        badgeVariant: "success",
-      };
-    case "cancelled":
-      return {
-        cardClass: "border-destructive/30",
-        iconBg: "bg-destructive/10 text-destructive",
-        badgeVariant: "destructive",
-      };
-    default:
-      return {
-        cardClass: "",
-        iconBg: "bg-primary/10 text-primary",
-        badgeVariant: "info",
-      };
-  }
-}
-
-function InfoTile({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="metric-card">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-        <Icon className="h-3.5 w-3.5" />
-        {label}
-      </div>
-      <p className="text-sm font-medium text-foreground">{value}</p>
-    </div>
   );
 }

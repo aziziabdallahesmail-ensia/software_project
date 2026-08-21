@@ -2,6 +2,10 @@
 
 import { Toaster as HotToaster } from "react-hot-toast";
 
+/* Hallmark · design-system: design.md
+ * Colours compose from the OKLCH channel triplets in tokens.css. The previous
+ * hsl(var(--card)) form broke when the palette moved to OKLCH. */
+
 export function Toaster() {
   return (
     <HotToaster
@@ -9,14 +13,22 @@ export function Toaster() {
       toastOptions={{
         duration: 3000,
         style: {
-          background: "hsl(var(--card))",
-          color: "hsl(var(--card-foreground))",
-          border: "1px solid hsl(var(--border))",
+          background: "oklch(var(--card))",
+          color: "oklch(var(--card-foreground))",
+          border: "1px solid oklch(var(--border))",
+          borderRadius: "var(--radius-card)",
+          fontSize: "0.875rem",
         },
         success: {
           iconTheme: {
-            primary: "#24AE7C",
-            secondary: "white",
+            primary: "oklch(var(--success))",
+            secondary: "oklch(var(--card))",
+          },
+        },
+        error: {
+          iconTheme: {
+            primary: "oklch(var(--destructive))",
+            secondary: "oklch(var(--card))",
           },
         },
       }}

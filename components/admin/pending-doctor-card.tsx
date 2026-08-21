@@ -1,15 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CheckCircle, Clock3, ExternalLink, MoreHorizontal, UserRound, XCircle } from "lucide-react";
+import { CheckCircle, ExternalLink, UserRound, XCircle } from "lucide-react";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ * A verification dossier. Approve and reject are irreversible for the
+ * applicant, so both confirm inline before firing. */
 
 interface PendingDoctorCardProps {
   doctor: {
@@ -31,81 +29,116 @@ export function PendingDoctorCard({
   onReject,
   isPending,
 }: PendingDoctorCardProps) {
+  const [confirming, setConfirming] = useState<null | "approve" | "reject">(
+    null,
+  );
+
   return (
-    <div className="card-clinical p-5 border-warning/30 hover:border-warning/50 transition-all duration-200 hover:-translate-y-0.5">
-      <div className="flex items-start gap-4">
-        <div className="relative icon-container icon-container-lg bg-warning/10 text-warning flex-shrink-0">
-          <UserRound className="h-6 w-6" />
-          <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-warning text-warning-foreground">
-            <Clock3 className="h-3 w-3" />
-          </div>
-        </div>
+    <article className="surface p-4">
+      <div className="flex items-start gap-3.5">
+        <span className="icon-container icon-container-md shrink-0 border-warning/30 bg-warning-soft text-warning">
+          <UserRound className="h-4 w-4" />
+        </span>
 
         <div className="min-w-0 flex-1">
-          <div className="mb-3 flex items-start justify-between gap-3">
-            <div className="space-y-2">
-              <h3 className="text-base font-semibold text-foreground">
-                Dr. {doctor.full_name}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="bg-warning/5 text-warning border-warning/20">
-                  {doctor.specialty}
-                </Badge>
-                <Badge variant="warning">
-                  <Clock3 className="h-3 w-3 mr-1" />
-                  En attente
-                </Badge>
-              </div>
-            </div>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h3 className="truncate font-display text-base font-medium tracking-display">
+              Dr. {doctor.full_name}
+            </h3>
+            <span className="truncate text-xs text-muted-foreground">
+              {doctor.specialty}
+            </span>
+          </div>
 
-            {doctor.experience && (
-              <div className="metric-card text-center flex-shrink-0">
-                <p className="text-xl font-semibold text-foreground">
-                  {doctor.experience}
-                </p>
-                <p className="text-xs text-muted-foreground">ans</p>
-              </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Badge variant="warning">En attente</Badge>
+            {typeof doctor.experience === "number" && (
+              <span className="text-xs text-muted-foreground">
+                <span className="tabular">{doctor.experience}</span>{" "}
+                {doctor.experience > 1 ? "ans d'expérience" : "an d'expérience"}
+              </span>
             )}
           </div>
 
-          <p className="line-clamp-2 text-sm text-muted-foreground mb-4">
-            {doctor.description}
-          </p>
+          {doctor.description && (
+            <p className="mt-2.5 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+              {doctor.description}
+            </p>
+          )}
 
-          <div className="flex items-center gap-2">
-            {doctor.credentialUrl && (
-              <Button variant="outline" size="sm" className="gap-1.5" asChild>
-                <a href={doctor.credentialUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Documents
-                </a>
-              </Button>
-            )}
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-success border-success/30 hover:bg-success/10 hover:text-success"
-                onClick={() => onApprove?.(doctor.id)}
-                disabled={isPending}
-              >
-                <CheckCircle className="h-4 w-4" />
-                Approuver
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-                onClick={() => onReject?.(doctor.id)}
-                disabled={isPending}
-              >
-                <XCircle className="h-4 w-4" />
-                Rejeter
-              </Button>
-            </div>
-          </div>
+          {doctor.credentialUrl && (
+            <a
+              href={doctor.credentialUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 whitespace-nowrap rounded text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              Consulter le justificatif
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
         </div>
       </div>
-    </div>
+
+      {confirming ? (
+        <div
+          role="alertdialog"
+          aria-label="Confirmation"
+          className={`mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-control)] border p-3 ${
+            confirming === "reject"
+              ? "border-destructive/25 bg-destructive-soft"
+              : "border-success/25 bg-success-soft"
+          }`}
+        >
+          <p className="min-w-0 flex-1 text-sm">
+            {confirming === "reject"
+              ? "Refuser ce dossier ? Le praticien en sera informé."
+              : "Approuver ce praticien ? Son profil deviendra visible aux patients."}
+          </p>
+          <div className="flex shrink-0 gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setConfirming(null)}
+              disabled={isPending}
+            >
+              Retour
+            </Button>
+            <Button
+              size="sm"
+              variant={confirming === "reject" ? "destructiveSolid" : "default"}
+              disabled={isPending}
+              onClick={() => {
+                if (confirming === "reject") onReject?.(doctor.id);
+                else onApprove?.(doctor.id);
+                setConfirming(null);
+              }}
+            >
+              Confirmer
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-border-soft pt-3.5">
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={isPending}
+            onClick={() => setConfirming("reject")}
+          >
+            <XCircle className="h-4 w-4" />
+            Refuser
+          </Button>
+          <Button
+            size="sm"
+            disabled={isPending}
+            onClick={() => setConfirming("approve")}
+          >
+            <CheckCircle className="h-4 w-4" />
+            Approuver
+          </Button>
+        </div>
+      )}
+    </article>
   );
 }
