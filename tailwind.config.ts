@@ -1,5 +1,12 @@
 import type { Config } from "tailwindcss";
 
+/* Hallmark · design-system: design.md
+ * Colours compose from OKLCH channel triplets defined in tokens.css, so
+ * Tailwind opacity modifiers (bg-primary/10, border-border/60) keep working.
+ * Never hardcode a colour literal here — it silently overrides the token and
+ * desynchronises the component from the focus ring. */
+const ch = (name: string) => `oklch(var(--${name}) / <alpha-value>)`;
+
 export default {
   darkMode: ["class"],
   content: [
@@ -11,57 +18,86 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: ch("background"),
+        foreground: ch("foreground"),
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: ch("card"),
+          foreground: ch("card-foreground"),
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: ch("popover"),
+          foreground: ch("popover-foreground"),
         },
         primary: {
-          DEFAULT: "#22c55e", // green-500
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: ch("primary"),
+          foreground: ch("primary-foreground"),
+          soft: ch("primary-soft"),
         },
-        "background-light": "#ffffff",
-        "background-dark": "#18181b",
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: ch("secondary"),
+          foreground: ch("secondary-foreground"),
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: ch("muted"),
+          foreground: ch("muted-foreground"),
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: ch("accent"),
+          foreground: ch("accent-foreground"),
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: ch("destructive"),
+          foreground: ch("destructive-foreground"),
+          soft: ch("destructive-soft"),
         },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
+        success: {
+          DEFAULT: ch("success"),
+          foreground: ch("success-foreground"),
+          soft: ch("success-soft"),
         },
+        warning: {
+          DEFAULT: ch("warning"),
+          foreground: ch("warning-foreground"),
+          soft: ch("warning-soft"),
+        },
+        border: {
+          DEFAULT: ch("border"),
+          soft: ch("border-soft"),
+        },
+        stage: {
+          DEFAULT: ch("ch-stage"),
+          2: ch("ch-stage-2"),
+          fg: ch("ch-stage-fg"),
+          rule: ch("ch-stage-rule"),
+          accent: ch("ch-stage-accent"),
+        },
+        scrim: ch("ch-scrim"),
+        input: ch("input"),
+        ring: ch("ring"),
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        DEFAULT: "0.5rem",
+        sm: "calc(var(--radius) - 2px)",
+        DEFAULT: "var(--radius)",
+        md: "var(--radius)",
+        lg: "var(--radius-card)",
+        xl: "var(--radius-panel)",
       },
       fontFamily: {
-        display: ["var(--font-sora)", "sans-serif"],
+        display: ["var(--font-plex-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-plex-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-plex-mono)", "ui-monospace", "monospace"],
+      },
+      letterSpacing: {
+        display: "var(--tracking-display)",
+        label: "var(--tracking-label)",
+      },
+      transitionTimingFunction: {
+        out: "var(--ease-out)",
+        "in-out": "var(--ease-in-out)",
+      },
+      transitionDuration: {
+        fast: "var(--dur-fast)",
+        base: "var(--dur-base)",
       },
     },
   },
