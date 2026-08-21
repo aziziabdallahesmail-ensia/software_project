@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 type UseFetchResult<T> = {
@@ -14,22 +14,28 @@ const useFetch = <T,>(callback: (...args: any[]) => Promise<T>): UseFetchResult<
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const execute = async (...args: any[]) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await callback(...args);
-      setData(response);
+  // `execute` must keep a stable identity across renders: callers put it in
+  // useEffect dependency arrays, and a fresh function each render re-fires the
+  // effect, which sets state, which renders again — an endless request loop.
+  const execute = useCallback(
+    async (...args: any[]) => {
+      setLoading(true);
       setError(null);
-    } catch (error) {
-      const errorInstance = error instanceof Error ? error : new Error(String(error));
-      setError(errorInstance);
-      toast.error(errorInstance.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      try {
+        const response = await callback(...args);
+        setData(response);
+        setError(null);
+      } catch (error) {
+        const errorInstance = error instanceof Error ? error : new Error(String(error));
+        setError(errorInstance);
+        toast.error(errorInstance.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [callback]
+  );
 
   return { data, loading, error, execute, setData };
 };

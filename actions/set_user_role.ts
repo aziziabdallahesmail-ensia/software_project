@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
+import { ensureProfile } from "@/lib/ensure-profile";
 
 
 /**
@@ -9,28 +10,14 @@ import prisma from "@/lib/prisma";
  */
 export async function setUserRole(formData: FormData) {
     const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error("Unauthorized");
   }
 
-  // Check if profile exists, if not create it
-  let profile = await prisma.profile.findUnique({
-    where: { id: user.id },
-  });
-
-  if (!profile) {
-    // Create the profile if it doesn't exist
-    profile = await prisma.profile.create({
-      data: {
-        id: user.id,
-        email: user.email,
-        full_name: user.user_metadata?.full_name || null,
-        role: "unassigned",
-      },
-    });
-  }
+  // Make sure the profile row exists before we update it
+  await ensureProfile(user);
 
   const role = formData.get("role") as string;
 
@@ -92,33 +79,13 @@ export async function setUserRole(formData: FormData) {
 export async function getCurrentUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const userId = user?.id;
 
-  if (!userId) {
+  if (!user) {
     return null;
   }
 
   try {
-    // Check if profile exists, if not create it
-    let profile = await prisma.profile.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!profile) {
-      // Create the profile if it doesn't exist
-      profile = await prisma.profile.create({
-        data: {
-          id: userId,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || null,
-          role: "unassigned",
-        },
-      });
-    }
-
-    return profile;
+    return await ensureProfile(user);
   } catch (error) {
     console.error("Failed to get user information:", error);
     return null;
