@@ -1,77 +1,59 @@
-import { AdminHeader } from "@/components/admin/admin-header";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
-import { Settings, ShieldCheck, BellRing } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ShieldCheck, BellRing, Settings } from "lucide-react";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ * Placeholder surface. It is labelled as not-yet-built rather than dressed up
+ * as a working settings panel. */
+
+const sections = [
+  {
+    icon: ShieldCheck,
+    title: "Sécurité",
+    description: "Accès, rôles et contrôle opérationnel.",
+  },
+  {
+    icon: BellRing,
+    title: "Notifications",
+    description: "Alertes de vérification et rappels de rendez-vous.",
+  },
+  {
+    icon: Settings,
+    title: "Système",
+    description: "Options globales de la plateforme.",
+  },
+];
 
 export default function ConfigurationPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background">
-      <AdminHeader />
-      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-        <div className="flex flex-col gap-6 lg:flex-row">
-          <AdminSidebar />
-          <section className="flex-1">
-            <Card>
-              <CardContent className="p-6 lg:p-8">
-                <div className="max-w-3xl space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="icon-container icon-container-lg">
-                      <Settings className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-foreground">
-                        Configuration
-                      </h2>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Cette section est prête pour recevoir les futurs réglages
-                        de la plateforme.
-                      </p>
-                    </div>
-                  </div>
+    <div>
+      <header className="page-header">
+        <p className="label-meta">Administration</p>
+        <h1 className="mt-2 font-display text-2xl font-medium leading-tight tracking-display">
+          Configuration
+        </h1>
+        <p className="measure mt-2 text-sm leading-relaxed text-muted-foreground">
+          Ces réglages ne sont pas encore actifs. Les sections ci-dessous
+          décrivent ce que cet espace accueillera.
+        </p>
+      </header>
 
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <PreviewCard
-                      icon={ShieldCheck}
-                      title="Sécurité"
-                      description="Paramètres d'accès, rôles et contrôle opérationnel."
-                    />
-                    <PreviewCard
-                      icon={BellRing}
-                      title="Notifications"
-                      description="Préférences liées aux alertes et aux validations."
-                    />
-                    <PreviewCard
-                      icon={Settings}
-                      title="Système"
-                      description="Options globales destinées à l'administration."
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-function PreviewCard({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="metric-card">
-      <div className="icon-container icon-container-md mb-3">
-        <Icon className="h-5 w-5" />
-      </div>
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <p className="text-xs text-muted-foreground mt-1">{description}</p>
+      <ul className="index-list">
+        {sections.map(({ icon: Icon, title, description }) => (
+          <li key={title} className="index-row">
+            <span className="icon-container icon-container-md shrink-0">
+              <Icon className="h-4 w-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium text-foreground">
+                {title}
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {description}
+              </span>
+            </span>
+            <span className="chip chip-neutral shrink-0">À venir</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

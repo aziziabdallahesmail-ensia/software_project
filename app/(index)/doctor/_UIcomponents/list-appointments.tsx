@@ -3,10 +3,27 @@
 import { useEffect } from "react";
 import { getDoctorAppointments } from "@/actions/doctor";
 import { AppointmentCard } from "@/components/appointment-card";
-import { Card, CardContent } from "@/components/ui/card";
-import { CalendarRange, Clock3, Loader2, Ban } from "lucide-react";
+import { CalendarRange, Loader2 } from "lucide-react";
 import useFetch from "@/hooks/use-fetch";
-import { Badge } from "@/components/ui/badge";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ * The doctor's day as a list. Counts come from the fetched data. */
+
+interface DoctorAppointment {
+  id: string;
+  startTime: Date | string;
+  endTime: Date | string;
+  status: string;
+  notes?: string | null;
+  patientDescription?: string | null;
+  videoRoomName?: string | null;
+  callDurationMinutes?: number | null;
+  patient?: {
+    full_name: string | null;
+    email?: string | null;
+    specialty?: string | null;
+  } | null;
+}
 
 export default function DoctorAppointmentsList() {
   const {
@@ -19,127 +36,79 @@ export default function DoctorAppointmentsList() {
     fetchAppointments();
   }, [fetchAppointments]);
 
-  const appointments = data?.appointments || [];
-  const scheduledAppointments = appointments.filter(
-    (apt: { status: string }) => apt.status.toLowerCase() === "scheduled"
-  );
-  const completedAppointments = appointments.filter(
-    (apt: { status: string }) => apt.status.toLowerCase() === "completed"
-  );
-  const cancelledAppointments = appointments.filter(
-    (apt: { status: string }) => apt.status.toLowerCase() === "cancelled"
-  );
+  const appointments: DoctorAppointment[] = data?.appointments || [];
+  const byStatus = (s: string) =>
+    appointments.filter((apt) => apt.status.toLowerCase() === s);
 
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <SmallMetric label="À venir" value={scheduledAppointments.length} icon={Clock3} />
-        <SmallMetric label="Terminés" value={completedAppointments.length} icon={CalendarRange} />
-        <SmallMetric label="Annulés" value={cancelledAppointments.length} icon={Ban} />
+  const groups = [
+    { key: "scheduled", title: "À venir", items: byStatus("scheduled") },
+    { key: "completed", title: "Terminés", items: byStatus("completed") },
+    { key: "cancelled", title: "Annulés", items: byStatus("cancelled") },
+  ].filter((g) => g.items.length > 0);
+
+  if (loading) {
+    return (
+      <div className="surface flex items-center justify-center gap-3 py-12">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">
+          Chargement des rendez-vous…
+        </span>
       </div>
+    );
+  }
 
-      {loading ? (
-        <Card>
-          <CardContent className="flex items-center justify-center gap-3 py-12">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Chargement des rendez-vous...</span>
-          </CardContent>
-        </Card>
-      ) : appointments.length > 0 ? (
-        <div className="space-y-6">
-          <AppointmentGroup title="À venir" count={scheduledAppointments.length}>
-            {scheduledAppointments.map((appointment: { id: string }) => (
-              <AppointmentCard
-                key={appointment.id}
-                appointment={appointment}
-                userRole="DOCTOR"
-                refetchAppointments={fetchAppointments}
-              />
-            ))}
-          </AppointmentGroup>
-
-          <AppointmentGroup title="Terminés" count={completedAppointments.length}>
-            {completedAppointments.map((appointment: { id: string }) => (
-              <AppointmentCard
-                key={appointment.id}
-                appointment={appointment}
-                userRole="DOCTOR"
-                refetchAppointments={fetchAppointments}
-              />
-            ))}
-          </AppointmentGroup>
-
-          <AppointmentGroup title="Annulés" count={cancelledAppointments.length}>
-            {cancelledAppointments.map((appointment: { id: string }) => (
-              <AppointmentCard
-                key={appointment.id}
-                appointment={appointment}
-                userRole="DOCTOR"
-                refetchAppointments={fetchAppointments}
-              />
-            ))}
-          </AppointmentGroup>
+  if (appointments.length === 0) {
+    return (
+      <div className="surface flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center">
+        <span className="icon-container icon-container-lg shrink-0">
+          <CalendarRange className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <h3 className="font-display text-base font-medium tracking-display">
+            Aucun rendez-vous
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Vos consultations apparaîtront ici dès qu&apos;un patient réservera
+            l&apos;un de vos créneaux.
+          </p>
         </div>
-      ) : (
-        <Card>
-          <CardContent className="py-10 text-center">
-            <div className="icon-container icon-container-lg mx-auto mb-4 bg-secondary text-muted-foreground">
-              <CalendarRange className="h-6 w-6" />
-            </div>
-            <h3 className="text-base font-semibold text-foreground">
-              Aucun rendez-vous programmé
-            </h3>
-            <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-              Vos consultations apparaîtront ici dès qu'un patient réservera
-              un créneau disponible.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function SmallMetric({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: number;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  return (
-    <div className="metric-card">
-      <div className="icon-container icon-container-sm mb-2">
-        <Icon className="h-4 w-4" />
       </div>
-      <p className="text-xl font-bold text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
-  );
-}
-
-function AppointmentGroup({
-  title,
-  count,
-  children,
-}: {
-  title: string;
-  count: number;
-  children: React.ReactNode;
-}) {
-  if (!count) return null;
+    );
+  }
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        <Badge variant="secondary" className="text-xs">
-          {count}
-        </Badge>
-      </div>
-      <div className="space-y-3">{children}</div>
-    </section>
+    <div className="flex flex-col gap-8">
+      <dl className="flex flex-wrap gap-x-8 gap-y-2 border-b border-border-soft pb-4">
+        {[
+          { label: "À venir", value: byStatus("scheduled").length },
+          { label: "Terminés", value: byStatus("completed").length },
+          { label: "Annulés", value: byStatus("cancelled").length },
+        ].map((stat) => (
+          <div key={stat.label} className="flex items-baseline gap-2">
+            <dd className="tabular text-lg font-medium text-foreground">
+              {stat.value}
+            </dd>
+            <dt className="text-xs text-muted-foreground">{stat.label}</dt>
+          </div>
+        ))}
+      </dl>
+
+      {groups.map((group) => (
+        <section key={group.key}>
+          <h3 className="label-meta mb-3">{group.title}</h3>
+          <ul className="flex flex-col gap-3">
+            {group.items.map((appointment) => (
+              <li key={appointment.id}>
+                <AppointmentCard
+                  appointment={appointment}
+                  userRole="DOCTOR"
+                  refetchAppointments={fetchAppointments}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
   );
 }

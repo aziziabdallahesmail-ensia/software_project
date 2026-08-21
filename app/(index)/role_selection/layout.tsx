@@ -1,13 +1,21 @@
 import { getCurrentUser } from "@/actions/set_user_role";
 import { redirect } from "next/navigation";
-import { ReactNode } from "react";
 
 export const metadata = {
-  title: "",
-  description: "",
+  title: "Choisir votre profil",
+  description:
+    "Indiquez si vous utilisez MédiConnect en tant que patient ou en tant que professionnel de santé.",
 };
 
-export default async function roleselectionlayout({ children }: { children: React.ReactNode }) {
+/* Hallmark · entry surface · design-system: design.md
+ * Left-aligned masthead over a hairline, matching the auth pages. The page
+ * below owns the choice; this shell owns the framing and the redirects. */
+
+export default async function RoleSelectionLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const user = await getCurrentUser();
 
   // Redirect users who have already completed this step
@@ -27,16 +35,18 @@ export default async function roleselectionlayout({ children }: { children: Reac
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 px-4 py-12">
-      <div className="w-full max-w-3xl">
-        <div className="text-center mb-10 space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-            Êtes-vous médecin ou patient ?
+    <div data-density="comfortable" className="min-h-screen bg-background">
+      <div className="mx-auto w-full max-w-[52rem] px-4 py-10 lg:px-6 lg:py-14">
+        <header className="page-header">
+          <p className="label-meta">Première étape</p>
+          <h1 className="mt-2 font-display text-[length:var(--text-display)] font-medium leading-[1.1] tracking-display">
+            Êtes-vous patient ou praticien&nbsp;?
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-base md:text-lg max-w-xl mx-auto">
-            Sélectionnez votre rôle pour accéder à votre espace personnalisé
+          <p className="measure mt-3 text-sm leading-relaxed text-muted-foreground">
+            Votre choix détermine l&apos;espace auquel vous accédez. Les
+            praticiens complètent un court dossier avant vérification.
           </p>
-        </div>
+        </header>
 
         {children}
       </div>

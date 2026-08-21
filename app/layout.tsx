@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Sora } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import "./globals.css";
 
 const defaultUrl = "http://localhost:3000";
@@ -9,20 +10,24 @@ const defaultUrl = "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Plateforme de Rendez-vous Médicaux",
-  description: "Prenez des rendez-vous, consultez par vidéo et gérez votre parcours de santé sur une seule plateforme sécurisée.",
+  description:
+    "Prenez des rendez-vous, consultez par vidéo et gérez votre parcours de santé sur une seule plateforme sécurisée.",
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display + body share one family (single-family discipline, modern-minimal).
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
   display: "swap",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600"],
 });
 
-const sora = Sora({
-  variable: "--font-sora",
+// Outlier register — machine-readable values only: times, dates, IDs.
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   display: "swap",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500"],
 });
 
 export default function RootLayout({
@@ -32,14 +37,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${sora.variable} font-display bg-background-light dark:bg-background-dark text-zinc-700 dark:text-zinc-300 antialiased transition-colors duration-300`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-        >
+      <body
+        className={`${plexSans.variable} ${plexMono.variable} bg-background text-foreground antialiased`}
+      >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          {/* Two toast libraries are in use: react-hot-toast (admin lists,
+              video call) and sonner (booking, availability, appointments).
+              Both need mounting — sonner's was missing, so its toasts were
+              silently dropped. */}
           <Toaster />
+          <SonnerToaster
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast:
+                  "!bg-card !text-card-foreground !border !border-border !rounded-[var(--radius-card)]",
+                description: "!text-muted-foreground",
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

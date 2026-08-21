@@ -6,18 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import {
-  Loader2,
-  Clock3,
-  ArrowLeft,
-  Calendar,
-  FileText,
-  CheckCircle2,
-  Stethoscope,
-} from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { bookAppointment } from "@/actions/patient";
 import { toast } from "sonner";
 import useFetch from "@/hooks/use-fetch";
+
+/* Hallmark · design-system: design.md
+ * Confirmation step. The chosen slot is restated as a read-only summary in
+ * mono, so the patient can verify before committing. */
 
 interface Slot {
   startTime: string;
@@ -56,7 +52,7 @@ export function AppointmentForm({
 
   useEffect(() => {
     if (data?.success) {
-      toast.success("Rendez-vous réservé avec succès !");
+      toast.success("Rendez-vous réservé.");
       onComplete();
     }
   }, [data, onComplete]);
@@ -70,95 +66,54 @@ export function AppointmentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/80 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
-            <Calendar className="h-4 w-4" />
-          </div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            Date
-          </p>
-          <p className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-50">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {/* Read-only summary of the chosen slot */}
+      <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-card)] border border-border bg-border sm:grid-cols-2">
+        <div className="bg-card p-4">
+          <dt className="label-meta">Date</dt>
+          <dd className="mt-1.5 text-sm font-medium first-letter:uppercase">
             {format(new Date(slot.startTime), "EEEE d MMMM yyyy", {
               locale: fr,
             })}
-          </p>
+          </dd>
         </div>
-
-        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/80 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
-            <Clock3 className="h-4 w-4" />
-          </div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            Horaire
-          </p>
-          <p className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-50">
-            {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-          </p>
+        <div className="bg-card p-4">
+          <dt className="label-meta">Horaire</dt>
+          <dd className="tabular mt-1.5 text-sm font-medium">
+            {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
+          </dd>
         </div>
-      </div>
+      </dl>
 
-      <div className="rounded-[1.75rem] border border-emerald-100/80 bg-white/90 p-6 shadow-sm dark:border-emerald-900/40 dark:bg-slate-950/70">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <FileText className="h-4 w-4" />
-          </div>
-          <div>
-            <Label htmlFor="description" className="text-base font-semibold text-slate-900 dark:text-slate-50">
-              Décrivez votre besoin médical
-            </Label>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Optionnel, mais utile pour préparer la consultation.
-            </p>
-          </div>
-        </div>
-
+      <div>
+        <Label htmlFor="description">Motif de la consultation</Label>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Facultatif. Ces informations sont transmises au praticien avant le
+          rendez-vous.
+        </p>
         <Textarea
           id="description"
-          placeholder="Expliquez brièvement le motif de votre consultation, vos symptômes ou la question que vous souhaitez aborder."
+          placeholder="Décrivez brièvement vos symptômes ou la question que vous souhaitez aborder."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="min-h-32 rounded-[1.25rem] border-emerald-100 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus-visible:ring-emerald-500 dark:border-emerald-900/40 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
+          className="mt-2.5 min-h-28"
         />
-
-        <div className="mt-4 flex items-start gap-3 rounded-[1.25rem] bg-slate-50 p-4 dark:bg-slate-900/80">
-          <Stethoscope className="mt-0.5 h-4 w-4 text-emerald-700 dark:text-emerald-300" />
-          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Ces informations seront partagées avec le médecin avant votre
-            rendez-vous afin de faciliter la prise en charge.
-          </p>
-        </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col-reverse gap-2 border-t border-border-soft pt-5 sm:flex-row sm:justify-end">
         <Button
           type="button"
           variant="outline"
           onClick={onBack}
           disabled={loading}
-          className="flex-1 rounded-full border-emerald-200 bg-white py-6 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-900/50 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
           Changer de créneau
         </Button>
 
-        <Button
-          type="submit"
-          disabled={loading}
-          className="flex-1 rounded-full bg-emerald-600 py-6 text-white hover:bg-emerald-700"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Réservation en cours...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="mr-2 h-5 w-5" />
-              Confirmer la réservation
-            </>
-          )}
+        <Button type="submit" disabled={loading}>
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading ? "Réservation…" : "Confirmer le rendez-vous"}
         </Button>
       </div>
     </form>

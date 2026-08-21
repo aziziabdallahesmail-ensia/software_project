@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,30 +8,42 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription,CardTitle,} from "@/components/ui/card";
-import { Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
-import { User, Stethoscope, Loader2, ArrowRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { User, Stethoscope, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { setUserRole } from "@/actions/set_user_role";
 import { docformschema } from "@/lib/schema";
 import { SPECIALTIES } from "@/lib/specialities";
 import useFetch from "@/hooks/use-fetch";
-import { useEffect } from "react";
+import type { z } from "zod";
 
-export default function roleselectionpage() {
-  const [step, setStep] = useState("choose-role");
+/* Hallmark · entry surface · design-system: design.md
+ * The role choices are real <button> elements, so they are keyboard-reachable.
+ * The previous version used div[onClick] wrapping a nested <Button>, which was
+ * unreachable by keyboard and double-fired on click. */
+
+type DoctorFormValues = z.infer<typeof docformschema>;
+
+export default function RoleSelectionPage() {
+  const [step, setStep] = useState<"choose-role" | "doctor-form">(
+    "choose-role",
+  );
   const router = useRouter();
 
-  // hook to handle form submission
   const { loading, data, execute: submitUserRole } = useFetch(setUserRole);
 
-  // react hook form setup and validation
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
     watch,
-  } = useForm({
+  } = useForm<DoctorFormValues>({
     resolver: zodResolver(docformschema),
     defaultValues: {
       specialty: "",
@@ -41,10 +53,8 @@ export default function roleselectionpage() {
     },
   });
 
-  // listen to specialty field changes
   const specialtyValue = watch("specialty");
 
-  // Handle patient role selection
   const handlePatientSelection = async () => {
     if (loading) return;
 
@@ -58,211 +68,200 @@ export default function roleselectionpage() {
     if (data && data?.success) {
       router.push(data.redirect);
     }
-  }, [data]);
+  }, [data, router]);
 
-  const ondocsubmit = async (data: any) => {
+  const ondocsubmit = async (values: DoctorFormValues) => {
     if (loading) return;
 
     const formData = new FormData();
     formData.append("role", "doctor");
-    formData.append("specialty", data.specialty);
-    formData.append("experience", data.experience.toString());
-    formData.append("credentialUrl", data.credentialUrl);
-    formData.append("description", data.description);
+    formData.append("specialty", values.specialty);
+    formData.append("experience", values.experience.toString());
+    formData.append("credentialUrl", values.credentialUrl);
+    formData.append("description", values.description);
 
     await submitUserRole(formData);
   };
 
-  // Role selection screen
   if (step === "choose-role") {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <Card
-          className="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-600 shadow-md hover:shadow-lg cursor-pointer transition-all duration-200 rounded-xl"
-          onClick={() => !loading && handlePatientSelection()}
-        >
-          <CardContent className="pt-10 pb-8 px-6 flex flex-col items-center text-center">
-            <div className="p-4 bg-blue-100 dark:bg-blue-800/40 rounded-full mb-5">
-              <User className="h-7 w-7 text-blue-600 dark:text-blue-300" />
-            </div>
-            <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
-              Rejoindre en tant que Patient
-            </CardTitle>
-            <CardDescription className="mb-6 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-              Prenez rendez-vous, consultez des médecins et gérez votre parcours de santé en toute simplicité.
-            </CardDescription>
-            <Button
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-full h-11 font-medium shadow-sm"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Traitement...
-                </>
-              ) : (
-                <>
-                  Continuer en tant que Patient
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+    const choices = [
+      {
+        id: "patient",
+        icon: User,
+        title: "Patient",
+        description:
+          "Prenez rendez-vous, rejoignez vos consultations vidéo et suivez votre parcours de soin.",
+        cta: "Continuer comme patient",
+        onSelect: handlePatientSelection,
+        note: "Accès immédiat",
+      },
+      {
+        id: "doctor",
+        icon: Stethoscope,
+        title: "Professionnel de santé",
+        description:
+          "Publiez vos disponibilités, gérez vos rendez-vous et consultez à distance.",
+        cta: "Continuer comme praticien",
+        onSelect: () => setStep("doctor-form"),
+        note: "Dossier à compléter",
+      },
+    ];
 
-        <Card
-          className="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-600 shadow-md hover:shadow-lg cursor-pointer transition-all duration-200 rounded-xl"
-          onClick={() => !loading && setStep("doctor-form")}
-        >
-          <CardContent className="pt-10 pb-8 px-6 flex flex-col items-center text-center">
-            <div className="p-4 bg-emerald-100 dark:bg-emerald-800/40 rounded-xl mb-5">
-              <Stethoscope className="h-7 w-7 text-emerald-600 dark:text-emerald-300" />
-            </div>
-            <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
-              Rejoindre en tant que Médecin
-            </CardTitle>
-            <CardDescription className="mb-6 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-              Créez votre profil professionnel, définissez vos disponibilités et proposez des consultations.
-            </CardDescription>
-            <Button
-              variant="outline"
-              className="w-full border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-300 dark:hover:bg-emerald-900/30 rounded-full h-11 font-medium"
-              disabled={loading}
-            >
-              Continuer en tant que Médecin
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        {choices.map(({ id, icon: Icon, title, description, cta, onSelect, note }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => !loading && onSelect()}
+            disabled={loading}
+            className="surface-interactive group flex flex-col items-start p-5 text-left disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <span className="icon-container icon-container-md transition-colors duration-base ease-out group-hover:border-primary/30 group-hover:bg-primary-soft group-hover:text-primary">
+              <Icon className="h-4 w-4" />
+            </span>
+
+            <span className="mt-4 font-display text-lg font-medium tracking-display">
+              {title}
+            </span>
+            <span className="mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">
+              {description}
+            </span>
+
+            <span className="mt-5 flex w-full items-center justify-between gap-3 border-t border-border-soft pt-4">
+              <span className="label-meta">{note}</span>
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium text-primary">
+                {loading && id === "patient" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Traitement…
+                  </>
+                ) : (
+                  <>
+                    {cta}
+                    <ArrowRight className="h-4 w-4 transition-transform duration-base ease-out group-hover:translate-x-0.5" />
+                  </>
+                )}
+              </span>
+            </span>
+          </button>
+        ))}
       </div>
     );
   }
 
-  // Doctor form
-  if (step === "doctor-form") {
-    return (
-      <Card className="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-600 shadow-md rounded-xl">
-        <CardContent className="pt-8 pb-8 px-6">
-          <div className="mb-8">
-            <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-              Complétez votre profil médecin
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-300">
-              Veuillez fournir vos informations professionnelles pour vérification
-            </CardDescription>
-          </div>
+  return (
+    <section className="surface p-5 lg:p-6">
+      <div className="border-b border-border pb-4">
+        <h2 className="font-display text-lg font-medium tracking-display">
+          Votre dossier professionnel
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Ces informations sont examinées par notre équipe avant la publication
+          de votre profil.
+        </p>
+      </div>
 
-          <form onSubmit={handleSubmit(ondocsubmit)} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="specialty">Spécialité médicale</Label>
-              <Select
-                value={specialtyValue}
-                onValueChange={(value) => setValue("specialty", value)}
-              >
-                <SelectTrigger id="specialty">
-                  <SelectValue placeholder="Sélectionnez votre spécialité" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SPECIALTIES.map((spec) => {
-                    const IconComponent = spec.icon;
-                    return (
-                      <SelectItem
-                        key={spec.name}
-                        value={spec.name}
-                        className="flex items-center gap-2"
-                      >
-                        <span className="text-emerald-400">
-                          <IconComponent className="h-4 w-4" />
-                        </span>
-                        {spec.name}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-              {errors.specialty && (
-                <p className="text-sm font-medium text-red-500 mt-1">
-                  {errors.specialty.message}
-                </p>
-              )}
-            </div>
+      <form onSubmit={handleSubmit(ondocsubmit)} className="flex flex-col gap-5 pt-5">
+        <div className="grid gap-2">
+          <Label htmlFor="specialty">Spécialité</Label>
+          <Select
+            value={specialtyValue}
+            onValueChange={(value) => setValue("specialty", value)}
+          >
+            <SelectTrigger id="specialty" aria-invalid={errors.specialty ? true : undefined}>
+              <SelectValue placeholder="Sélectionnez une spécialité" />
+            </SelectTrigger>
+            <SelectContent>
+              {SPECIALTIES.map((spec) => {
+                const IconComponent = spec.icon;
+                return (
+                  <SelectItem key={spec.name} value={spec.name}>
+                    <span className="flex items-center gap-2">
+                      <IconComponent className="h-4 w-4 text-muted-foreground" />
+                      {spec.name}
+                    </span>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+          {errors.specialty && (
+            <p role="alert" className="text-xs text-destructive">
+              {errors.specialty.message}
+            </p>
+          )}
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="experience">Années d'expérience</Label>
-              <Input
-                id="experience"
-                type="number"
-                placeholder="ex. 5"
-                {...register("experience", { valueAsNumber: true })}
-              />
-              {errors.experience && (
-                <p className="text-sm font-medium text-red-500 mt-1">
-                  {errors.experience.message}
-                </p>
-              )}
-            </div>
+        <div className="grid gap-2">
+          <Label htmlFor="experience">Années d&apos;expérience</Label>
+          <Input
+            id="experience"
+            type="number"
+            min={0}
+            className="tabular"
+            placeholder="5"
+            aria-invalid={errors.experience ? true : undefined}
+            {...register("experience", { valueAsNumber: true })}
+          />
+          {errors.experience && (
+            <p role="alert" className="text-xs text-destructive">
+              {errors.experience.message}
+            </p>
+          )}
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="credentialUrl">Lien vers le document de certification</Label>
-              <Input
-                id="credentialUrl"
-                type="url"
-                placeholder="https://universite.edu/mon-diplome-medical.pdf"
-                {...register("credentialUrl")}
-              />
-              {errors.credentialUrl && (
-                <p className="text-sm font-medium text-red-500 mt-1">
-                  {errors.credentialUrl.message}
-                </p>
-              )}
-              <p className="text-sm text-muted-foreground">
-                Veuillez fournir un lien vers votre diplôme de médecine ou certification
-              </p>
-            </div>
+        <div className="grid gap-2">
+          <Label htmlFor="credentialUrl">Lien vers votre justificatif</Label>
+          <Input
+            id="credentialUrl"
+            type="url"
+            placeholder="https://universite.edu/diplome.pdf"
+            aria-invalid={errors.credentialUrl ? true : undefined}
+            {...register("credentialUrl")}
+          />
+          <p className="text-xs text-muted-foreground">
+            Diplôme ou certification, accessible en lecture par notre équipe.
+          </p>
+          {errors.credentialUrl && (
+            <p role="alert" className="text-xs text-destructive">
+              {errors.credentialUrl.message}
+            </p>
+          )}
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description de vos services</Label>
-              <Textarea
-                id="description"
-                placeholder="Décrivez votre expertise, vos services et votre approche des soins aux patients..."
-                rows={4}
-                {...register("description")}
-              />
-              {errors.description && (
-                <p className="text-sm font-medium text-red-500 mt-1">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
+        <div className="grid gap-2">
+          <Label htmlFor="description">Présentation de votre pratique</Label>
+          <Textarea
+            id="description"
+            rows={4}
+            placeholder="Décrivez votre expertise, vos services et votre approche des soins."
+            aria-invalid={errors.description ? true : undefined}
+            {...register("description")}
+          />
+          {errors.description && (
+            <p role="alert" className="text-xs text-destructive">
+              {errors.description.message}
+            </p>
+          )}
+        </div>
 
-            <div className="pt-4 flex items-center justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setStep("choose-role")}
-                className="border-2 border-gray-300 dark:border-gray-500 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full px-6"
-                disabled={loading}
-              >
-                Retour
-              </Button>
-              <Button
-                type="submit"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 shadow-sm"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Envoi en cours...
-                  </>
-                ) : (
-                  "Soumettre pour vérification"
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    );
-  }
+        <div className="flex flex-col-reverse gap-2 border-t border-border-soft pt-5 sm:flex-row sm:justify-between">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setStep("choose-role")}
+            disabled={loading}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading ? "Envoi…" : "Soumettre pour vérification"}
+          </Button>
+        </div>
+      </form>
+    </section>
+  );
 }

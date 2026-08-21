@@ -5,21 +5,16 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Clock3,
-  Plus,
-  Loader2,
-  AlertCircle,
-  CalendarClock,
-  CheckCircle2,
-  X,
-} from "lucide-react";
+import { Plus, Loader2, X } from "lucide-react";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { setAvailability } from "@/actions/doctor";
 import useFetch from "@/hooks/use-fetch";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ * Slots are a list, not a card grid. Times are mono so columns align. */
 
 interface Slot {
   id: string;
@@ -66,7 +61,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
       now.getMonth(),
       now.getDate(),
       hours,
-      minutes
+      minutes,
     );
   }
 
@@ -78,7 +73,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
     const endDate = createLocalDateFromTime(formData.endTime);
 
     if (startDate >= endDate) {
-      toast.error("L'heure de fin doit être après l'heure de début");
+      toast.error("L'heure de fin doit être après l'heure de début.");
       return;
     }
 
@@ -91,7 +86,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
   useEffect(() => {
     if (responseData?.success) {
       setShowForm(false);
-      toast.success("Créneaux de disponibilité mis à jour avec succès");
+      toast.success("Disponibilités mises à jour.");
     }
   }, [responseData]);
 
@@ -99,7 +94,7 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
     try {
       return format(new Date(dateString), "HH:mm");
     } catch {
-      return "Heure invalide";
+      return "--:--";
     }
   };
 
@@ -107,205 +102,126 @@ export function SetAvailability({ slots }: SetAvailabilityProps) {
   const bookedSlots = slots.filter((s) => s.status === "booked");
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <MetricCard
-          icon={CheckCircle2}
-          label="Disponibles"
-          value={availableSlots.length}
-        />
-        <MetricCard icon={CalendarClock} label="Réservés" value={bookedSlots.length} />
-      </div>
+    <div className="surface p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-soft pb-4">
+        <dl className="flex flex-wrap gap-x-6 gap-y-1">
+          <div className="flex items-baseline gap-2">
+            <dd className="tabular text-lg font-medium">
+              {availableSlots.length}
+            </dd>
+            <dt className="text-xs text-muted-foreground">libres</dt>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <dd className="tabular text-lg font-medium">
+              {bookedSlots.length}
+            </dd>
+            <dt className="text-xs text-muted-foreground">réservés</dt>
+          </div>
+        </dl>
 
-      <Card>
-        <CardContent className="p-5">
-          {!showForm ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">
-                    Créneaux actuels
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Les créneaux ouverts aux réservations patients.
-                  </p>
-                </div>
-                <Badge variant="secondary">
-                  {slots.length} créneau{slots.length > 1 ? "x" : ""}
-                </Badge>
-              </div>
-
-              {slots.length === 0 ? (
-                <div className="text-center py-6">
-                  <div className="icon-container icon-container-md mx-auto mb-3 bg-secondary text-muted-foreground">
-                    <CalendarClock className="h-5 w-5" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">
-                    Aucun créneau défini
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Ajoutez vos disponibilités pour permettre aux patients de
-                    réserver une consultation.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {slots.map((slot) => (
-                    <div
-                      key={slot.id}
-                      className="flex items-center justify-between gap-4 p-3 rounded-lg bg-secondary/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="icon-container icon-container-sm bg-card">
-                          <Clock3 className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">
-                            {formatTimeString(slot.startTime)} -{" "}
-                            {formatTimeString(slot.endTime)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Durée: 1 heure
-                          </p>
-                        </div>
-                      </div>
-                      <Badge
-                        variant={slot.status === "booked" ? "info" : "outline"}
-                      >
-                        {slot.status === "booked" ? "Réservé" : "Disponible"}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <Button
-                onClick={() => setShowForm(true)}
-                className="w-full gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Ajouter un créneau
-              </Button>
-            </div>
+        <Button
+          size="sm"
+          variant={showForm ? "ghost" : "default"}
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? (
+            <>
+              <X className="h-4 w-4" />
+              Fermer
+            </>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">
-                    Nouveau créneau
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Définissez l'heure de début et de fin.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="iconSm"
-                  onClick={() => setShowForm(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="startTime" className="text-xs">Heure de début</Label>
-                  <Input
-                    id="startTime"
-                    type="time"
-                    {...register("startTime", {
-                      required: "L'heure de début est requise",
-                    })}
-                  />
-                  {errors.startTime && (
-                    <p className="flex items-center gap-1 text-xs text-destructive">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.startTime.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="endTime" className="text-xs">Heure de fin</Label>
-                  <Input
-                    id="endTime"
-                    type="time"
-                    {...register("endTime", {
-                      required: "L'heure de fin est requise",
-                    })}
-                  />
-                  {errors.endTime && (
-                    <p className="flex items-center gap-1 text-xs text-destructive">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.endTime.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowForm(false)}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Enregistrement...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      Enregistrer
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
+            <>
+              <Plus className="h-4 w-4" />
+              Ajouter un créneau
+            </>
           )}
-        </CardContent>
-      </Card>
+        </Button>
+      </div>
 
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-secondary/30">
-        <div className="icon-container icon-container-sm bg-card flex-shrink-0">
-          <AlertCircle className="h-4 w-4" />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Les disponibilités définissent les créneaux visibles par les
-          patients. Les rendez-vous déjà réservés restent conservés.
+      {showForm && (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="border-b border-border-soft py-5"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="startTime">Début</Label>
+              <Input
+                id="startTime"
+                type="time"
+                className="tabular"
+                aria-invalid={errors.startTime ? true : undefined}
+                {...register("startTime", {
+                  required: "Heure de début requise",
+                })}
+              />
+              {errors.startTime && (
+                <p role="alert" className="text-xs text-destructive">
+                  {errors.startTime.message}
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="endTime">Fin</Label>
+              <Input
+                id="endTime"
+                type="time"
+                className="tabular"
+                aria-invalid={errors.endTime ? true : undefined}
+                {...register("endTime", { required: "Heure de fin requise" })}
+              />
+              {errors.endTime && (
+                <p role="alert" className="text-xs text-destructive">
+                  {errors.endTime.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Le créneau est enregistré pour la journée en cours et découpé
+            automatiquement en consultations.
+          </p>
+
+          <div className="mt-4 flex justify-end">
+            <Button type="submit" size="sm" disabled={loading}>
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Enregistrement…" : "Enregistrer"}
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {slots.length > 0 ? (
+        <ul className="index-list mt-4">
+          {slots.map((slot) => (
+            <li key={slot.id} className="index-row">
+              <span className="tabular text-sm font-medium text-foreground">
+                {formatTimeString(slot.startTime)} –{" "}
+                {formatTimeString(slot.endTime)}
+              </span>
+              <span className="text-xs text-muted-foreground first-letter:uppercase">
+                {format(new Date(slot.startTime), "EEE d MMM", { locale: fr })}
+              </span>
+              <span className="ml-auto">
+                {slot.status === "available" ? (
+                  <Badge variant="success">Libre</Badge>
+                ) : slot.status === "booked" ? (
+                  <Badge variant="info">Réservé</Badge>
+                ) : (
+                  <Badge variant="secondary">Bloqué</Badge>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-5 text-sm text-muted-foreground">
+          Aucun créneau défini. Ajoutez une plage horaire pour que les patients
+          puissent réserver.
         </p>
-      </div>
-    </div>
-  );
-}
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="metric-card">
-      <div className="icon-container icon-container-sm mb-2">
-        <Icon className="h-4 w-4" />
-      </div>
-      <p className="text-xl font-bold text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      )}
     </div>
   );
 }

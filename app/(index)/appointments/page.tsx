@@ -1,12 +1,13 @@
 import { getPatientAppointments } from "@/actions/patient";
 import { getCurrentUser } from "@/actions/set_user_role";
 import { redirect } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock3, Stethoscope, Ban, ArrowRight } from "lucide-react";
+import { CalendarPlus, ArrowRight } from "lucide-react";
 import { AppointmentCard } from "@/components/appointment-card";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ * The page IS the list. Counts are derived from the query, never invented.
+ * Patient surface → comfortable density. */
 
 export default async function PatientAppointmentsPage() {
   const user = await getCurrentUser();
@@ -18,185 +19,122 @@ export default async function PatientAppointmentsPage() {
   const appointments = await getPatientAppointments();
 
   const scheduledAppointments = appointments.filter(
-    (apt) => apt.status === "scheduled"
+    (apt) => apt.status === "scheduled",
   );
   const completedAppointments = appointments.filter(
-    (apt) => apt.status === "completed"
+    (apt) => apt.status === "completed",
   );
   const cancelledAppointments = appointments.filter(
-    (apt) => apt.status === "cancelled"
+    (apt) => apt.status === "cancelled",
   );
 
+  const groups = [
+    {
+      key: "scheduled",
+      title: "À venir",
+      hint: "Consultations que vous pouvez encore gérer.",
+      items: scheduledAppointments,
+    },
+    {
+      key: "completed",
+      title: "Historique",
+      hint: "Consultations déjà réalisées.",
+      items: completedAppointments,
+    },
+    {
+      key: "cancelled",
+      title: "Annulés",
+      hint: "Consultations non maintenues.",
+      items: cancelledAppointments,
+    },
+  ].filter((g) => g.items.length > 0);
+
   return (
-    <div className="min-h-[calc(100vh-var(--header-height))] bg-gradient-to-b from-primary/5 via-background to-background">
-      <div className="container mx-auto px-4 lg:px-6 py-8 max-w-7xl">
-        <div className="page-header mb-8">
-          <div className="grid gap-8 lg:grid-cols-[1.3fr_0.9fr]">
-            <div className="space-y-4">
-              <Badge variant="outline" className="bg-success/5 text-success border-success/20">
-                Espace patient
-              </Badge>
-              <div className="space-y-2">
-                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
-                  Vos rendez-vous, présentés avec clarté.
-                </h1>
-                <p className="text-muted-foreground max-w-xl">
-                  Suivez vos consultations à venir, retrouvez l&apos;historique
-                  de vos soins et accédez rapidement à vos rendez-vous vidéo.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <StatCard
-                icon={Clock3}
-                label="À venir"
-                value={scheduledAppointments.length}
-              />
-              <StatCard
-                icon={Stethoscope}
-                label="Terminés"
-                value={completedAppointments.length}
-              />
-              <StatCard
-                icon={Ban}
-                label="Annulés"
-                value={cancelledAppointments.length}
-              />
-            </div>
-          </div>
-        </div>
-
-        {appointments.length > 0 ? (
-          <div className="space-y-8">
-            <AppointmentSection
-              title="Consultations à venir"
-              subtitle="Les rendez-vous actifs que vous pouvez encore gérer."
-              count={scheduledAppointments.length}
+    <div data-density="comfortable" className="min-h-screen bg-background">
+      <div className="mx-auto w-full max-w-[68rem] px-4 py-8 lg:px-6 lg:py-10">
+        <header className="page-header">
+          <p className="label-meta">Espace patient</p>
+          <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <h1 className="font-display text-[length:var(--text-display)] font-medium leading-[1.1] tracking-display">
+              Mes rendez-vous
+            </h1>
+            <Link
+              href="/list_doctors"
+              className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] border border-border px-4 text-sm font-medium transition-colors duration-base ease-out hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <div className="space-y-4">
-                {scheduledAppointments.map((appointment) => (
-                  <AppointmentCard
-                    key={appointment.id}
-                    appointment={appointment}
-                    userRole="PATIENT"
-                    refetchAppointments={getPatientAppointments}
-                  />
-                ))}
-              </div>
-            </AppointmentSection>
+              <CalendarPlus className="h-4 w-4" />
+              Prendre rendez-vous
+            </Link>
+          </div>
 
-            {completedAppointments.length > 0 && (
-              <AppointmentSection
-                title="Historique des consultations"
-                subtitle="Vos rendez-vous déjà réalisés."
-                count={completedAppointments.length}
-              >
-                <div className="space-y-4">
-                  {completedAppointments.map((appointment) => (
-                    <AppointmentCard
-                      key={appointment.id}
-                      appointment={appointment}
-                      userRole="PATIENT"
-                      refetchAppointments={getPatientAppointments}
-                    />
-                  ))}
+          {appointments.length > 0 && (
+            <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-2">
+              {[
+                { label: "À venir", value: scheduledAppointments.length },
+                { label: "Terminés", value: completedAppointments.length },
+                { label: "Annulés", value: cancelledAppointments.length },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-baseline gap-2">
+                  <dd className="tabular text-lg font-medium text-foreground">
+                    {stat.value}
+                  </dd>
+                  <dt className="text-xs text-muted-foreground">
+                    {stat.label}
+                  </dt>
                 </div>
-              </AppointmentSection>
-            )}
+              ))}
+            </dl>
+          )}
+        </header>
 
-            {cancelledAppointments.length > 0 && (
-              <AppointmentSection
-                title="Rendez-vous annulés"
-                subtitle="Conservez une trace des consultations non maintenues."
-                count={cancelledAppointments.length}
-              >
-                <div className="space-y-4">
-                  {cancelledAppointments.map((appointment) => (
-                    <AppointmentCard
-                      key={appointment.id}
-                      appointment={appointment}
-                      userRole="PATIENT"
-                      refetchAppointments={getPatientAppointments}
-                    />
-                  ))}
+        {groups.length > 0 ? (
+          <div className="flex flex-col gap-10">
+            {groups.map((group) => (
+              <section key={group.key}>
+                <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h2 className="font-display text-base font-medium tracking-display">
+                    {group.title}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">{group.hint}</p>
                 </div>
-              </AppointmentSection>
-            )}
+                <ul className="flex flex-col gap-3">
+                  {group.items.map((appointment) => (
+                    <li key={appointment.id}>
+                      <AppointmentCard
+                        appointment={appointment}
+                        userRole="PATIENT"
+                        refetchAppointments={getPatientAppointments}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-10 px-6 text-center">
-              <div className="icon-container icon-container-lg mx-auto mb-4">
-                <Calendar className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground mb-2">
-                Aucun rendez-vous enregistré
+          <div className="surface flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center">
+            <span className="icon-container icon-container-lg shrink-0">
+              <CalendarPlus className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-base font-medium tracking-display">
+                Aucun rendez-vous pour l&apos;instant
               </h2>
-              <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                Vous n&apos;avez pas encore réservé de consultation. Explorez
-                les spécialités médicales disponibles pour trouver le bon
-                praticien et réserver un créneau adapté.
+              <p className="mt-1 text-sm text-muted-foreground">
+                Parcourez les spécialités disponibles et réservez votre première
+                consultation.
               </p>
-              <Button asChild>
-                <Link href="/list_doctors">
-                  Trouver un médecin
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
+            <Link
+              href="/list_doctors"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors duration-base ease-out hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              Trouver un médecin
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         )}
       </div>
     </div>
-  );
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="metric-card">
-      <div className="icon-container icon-container-sm mb-2">
-        <Icon className="h-4 w-4" />
-      </div>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
-  );
-}
-
-function AppointmentSection({
-  title,
-  subtitle,
-  count,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  count: number;
-  children: React.ReactNode;
-}) {
-  if (!count) return null;
-
-  return (
-    <section className="space-y-4">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        </div>
-        <Badge variant="secondary">
-          {count} élément{count > 1 ? "s" : ""}
-        </Badge>
-      </div>
-      {children}
-    </section>
   );
 }

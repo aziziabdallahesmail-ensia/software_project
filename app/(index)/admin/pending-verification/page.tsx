@@ -1,20 +1,26 @@
-import { AdminHeader } from "@/components/admin/admin-header";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { PendingDoctorsList } from "@/components/admin/pending-doctors-list";
 import { getPendingDoctors } from "@/actions/admin";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md */
 
 export default async function PendingVerificationPage() {
   const doctors = await getPendingDoctors();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background">
-      <AdminHeader />
-      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          <AdminSidebar pendingCount={doctors.length} />
-          <PendingDoctorsList initialDoctors={doctors} />
+    <div>
+      <header className="page-header">
+        <p className="label-meta">Administration</p>
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <h1 className="font-display text-2xl font-medium leading-tight tracking-display">
+            Vérifications en attente
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            <span className="tabular text-foreground">{doctors.length}</span>{" "}
+            {doctors.length > 1 ? "dossiers" : "dossier"}
+          </p>
         </div>
-      </main>
+      </header>
+      <PendingDoctorsList initialDoctors={doctors} />
     </div>
   );
 }

@@ -2,9 +2,12 @@
 
 import VideoCall from "@/components/video-call";
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
+
+/* Hallmark · design-system: design.md
+ * Invalid-request state only; the call surface itself is VideoCall. */
 
 export default function PatientVideoCallPage() {
   const searchParams = useSearchParams();
@@ -12,23 +15,20 @@ export default function PatientVideoCallPage() {
 
   if (!appointmentId) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background p-6">
-        <div className="container mx-auto">
-          <Card className="max-w-md mx-auto mt-8">
-            <CardHeader>
-              <CardTitle>Demande invalide</CardTitle>
-              <CardDescription>
-                Aucun identifiant de rendez-vous n&apos;a été fourni. Rejoignez
-                l&apos;appel depuis votre liste de rendez-vous.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/appointments">
-                <Button className="w-full">Retour aux rendez-vous</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="mx-auto w-full max-w-[36rem] px-4 py-12">
+        <span className="icon-container icon-container-lg mb-4 border-warning/30 bg-warning-soft text-warning">
+          <AlertTriangle className="h-5 w-5" />
+        </span>
+        <h1 className="font-display text-2xl font-medium tracking-display">
+          Lien de consultation incomplet
+        </h1>
+        <p className="measure mt-2 text-sm leading-relaxed text-muted-foreground">
+          Aucun identifiant de rendez-vous n&apos;a été fourni. Rejoignez la
+          consultation depuis votre liste de rendez-vous.
+        </p>
+        <Button className="mt-6" asChild>
+          <Link href="/appointments">Retour</Link>
+        </Button>
       </div>
     );
   }

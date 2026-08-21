@@ -1,23 +1,20 @@
-import { AdminHeader } from "@/components/admin/admin-header";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { DoctorsList } from "@/components/admin/doctors-list";
-import { getActiveDoctors, getPendingDoctors } from "@/actions/admin";
+import { getActiveDoctors } from "@/actions/admin";
+
+/* Hallmark · macrostructure: Index-First · design-system: design.md */
 
 export default async function AdminDashboardPage() {
-  const [doctors, pendingDoctors] = await Promise.all([
-    getActiveDoctors(),
-    getPendingDoctors(),
-  ]);
+  const doctors = await getActiveDoctors();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background">
-      <AdminHeader />
-      <main className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          <AdminSidebar pendingCount={pendingDoctors.length} />
-          <DoctorsList initialDoctors={doctors} />
-        </div>
-      </main>
+    <div>
+      <header className="page-header">
+        <p className="label-meta">Administration</p>
+        <h1 className="mt-2 font-display text-2xl font-medium leading-tight tracking-display">
+          Praticiens
+        </h1>
+      </header>
+      <DoctorsList initialDoctors={doctors} />
     </div>
   );
 }

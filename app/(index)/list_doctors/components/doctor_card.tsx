@@ -1,9 +1,11 @@
 import Image from "next/image";
-import { User, Star, Calendar, Medal, Stethoscope, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { User, Star, ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+/* Hallmark · macrostructure: Catalogue · design-system: design.md
+ * One practitioner tile. Experience is a real field; nothing here is invented.
+ * The whole tile is the link — no nested button inside an anchor. */
 
 interface Doctor {
   id: string;
@@ -21,74 +23,66 @@ interface DoctorCardProps {
 
 export function DoctorCard({ doctor }: DoctorCardProps) {
   return (
-    <Card className="group h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/30">
-      <CardContent className="flex h-full flex-col gap-5 p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-secondary text-primary">
-              {doctor.imageUrl ? (
-                <Image
-                  src={doctor.imageUrl}
-                  alt={doctor.full_name || "Médecin"}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <User className="h-6 w-6" />
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <h3 className="text-base font-semibold text-foreground">
-                Dr. {doctor.full_name}
-              </h3>
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                {doctor.specialty}
-              </Badge>
-            </div>
-          </div>
-
-          {doctor.isFeatured && (
-            <Badge variant="warning" className="gap-1">
-              <Star className="h-3 w-3 fill-current" />
-              Recommandé
-            </Badge>
+    <Link
+      href={`/list_doctors/${doctor.specialty}/${doctor.id}`}
+      className="surface-interactive group flex h-full flex-col p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <div className="flex items-start gap-4">
+        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-control)] border border-border-soft bg-muted text-muted-foreground">
+          {doctor.imageUrl ? (
+            <Image
+              src={doctor.imageUrl}
+              alt=""
+              fill
+              sizes="48px"
+              className="object-cover"
+            />
+          ) : (
+            <User className="h-5 w-5" />
           )}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate font-display text-base font-medium tracking-display text-foreground">
+            Dr. {doctor.full_name}
+          </h3>
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+            {doctor.specialty}
+          </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="metric-card">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <Medal className="h-3.5 w-3.5 text-primary" />
-              Expérience
-            </div>
-            <p className="text-sm font-semibold text-foreground">
-              {doctor.experience || 0} ans
-            </p>
-          </div>
-          <div className="metric-card">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <Stethoscope className="h-3.5 w-3.5 text-primary" />
-              Statut
-            </div>
-            <p className="text-sm font-semibold text-foreground">
-              Médecin vérifié
-            </p>
-          </div>
-        </div>
+        {doctor.isFeatured && (
+          <Badge variant="warning" dot={false} className="shrink-0">
+            <Star className="h-3 w-3 fill-current" />
+            Recommandé
+          </Badge>
+        )}
+      </div>
 
-        <p className="line-clamp-2 text-sm text-muted-foreground flex-1">
-          {doctor.description ||
-            "Médecin spécialiste vérifié et disponible pour des consultations."}
+      {doctor.description && (
+        <p className="mt-4 line-clamp-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+          {doctor.description}
         </p>
+      )}
 
-        <Button className="w-full gap-2" asChild>
-          <Link href={`/list_doctors/${doctor.specialty}/${doctor.id}`}>
-            <Calendar className="h-4 w-4" />
-            Voir le profil
-            <ArrowRight className="h-4 w-4 ml-auto transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-soft pt-3.5">
+        <span className="text-xs text-muted-foreground">
+          {typeof doctor.experience === "number" ? (
+            <>
+              <span className="tabular text-foreground">
+                {doctor.experience}
+              </span>{" "}
+              {doctor.experience > 1 ? "ans d'expérience" : "an d'expérience"}
+            </>
+          ) : (
+            "Expérience non renseignée"
+          )}
+        </span>
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-primary">
+          Voir le profil
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-base ease-out group-hover:translate-x-0.5" />
+        </span>
+      </div>
+    </Link>
   );
 }
